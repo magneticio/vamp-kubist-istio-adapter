@@ -29,6 +29,7 @@ import (
 	"os"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/config"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"istio.io/api/mixer/adapter/model/v1beta1"
 	policy "istio.io/api/policy/v1beta1"
 	"istio.io/istio/mixer/template/logentry"
@@ -142,6 +143,9 @@ func decodeValue(in interface{}) interface{} {
 
 func instances(in []*logentry.InstanceMsg) string {
 	var b bytes.Buffer
+	var URL string
+	var Cookie string
+	var Destination string
 	for _, inst := range in {
 		timeStamp := inst.Timestamp.Value.String()
 		severity := inst.Severity
@@ -149,8 +153,24 @@ func instances(in []*logentry.InstanceMsg) string {
 		fmt.Println("Severity: ", severity)
 		for k, v := range inst.Variables {
 			fmt.Println(k, ": ", decodeValue(v.GetValue()))
+			if k == "cookies" {
+				Cookie = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+			} else if k == "url" {
+				URL = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+			} else if k == "destination" {
+				Destination = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+			}
+
 		}
 	}
+
+	logInstance := &models.LogInstance{
+		Destination: Destination,
+		URL:         URL,
+		Cookie:      Cookie,
+	}
+
+	fmt.Printf("logInstance: %v\n", logInstance)
 	return b.String()
 }
 
