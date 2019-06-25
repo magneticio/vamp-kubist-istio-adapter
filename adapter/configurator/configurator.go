@@ -1,10 +1,7 @@
 package configurator
 
 import (
-	"sync"
-
-	"github.com/magneticio/vampkubistcli/client"
-	"github.com/magneticio/vampkubistcli/logging"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 )
 
 type config struct {
@@ -18,21 +15,13 @@ type config struct {
 	APIVersion     string `yaml:"apiversion,omitempty" json:"apiversion,omitempty"`
 }
 
-type stats struct {
-	NumberOfElements  float64
-	Average           float64
-	StandardDeviation float64
-}
-
-type Experiment struct {
-	SubsetStats map[string]stats
-}
-
 var Config config
 
-var experiments sync.Map
+// var Experiments map[string]Experiment
+
+var ExperimentConfigurations map[string]*models.ExperimentConfiguration
 
 func query() error {
-	restClient := client.NewRestClient(Config.Url, Config.Token, Config.APIVersion, logging.Verbose, Config.Cert)
+	// restClient := client.NewRestClient(Config.Url, Config.Token, Config.APIVersion, logging.Verbose, Config.Cert)
 	return nil
 }

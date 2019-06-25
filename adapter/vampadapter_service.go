@@ -30,6 +30,7 @@ import (
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/config"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/processor"
 	"istio.io/api/mixer/adapter/model/v1beta1"
 	policy "istio.io/api/policy/v1beta1"
 	"istio.io/istio/mixer/template/logentry"
@@ -88,7 +89,7 @@ func (s *VampAdapter) HandleLogEntry(ctx context.Context, r *logentry.HandleLogE
 	}
 
 	b.WriteString(fmt.Sprintf("HandleMetric invoked with:\n  Adapter config: %s\n  Instances: %s\n",
-		cfg.String(), instances(r.Instances)))
+		cfg.String(), s.instances(r.Instances)))
 
 	if cfg.FilePath == "" {
 		fmt.Println(b.String())
@@ -141,7 +142,7 @@ func decodeValue(in interface{}) interface{} {
 	}
 }
 
-func instances(in []*logentry.InstanceMsg) string {
+func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 	var b bytes.Buffer
 	var URL string
 	var Cookie string
@@ -162,15 +163,15 @@ func instances(in []*logentry.InstanceMsg) string {
 			}
 
 		}
+		logInstance := &models.LogInstance{
+			Destination: Destination,
+			URL:         URL,
+			Cookie:      Cookie,
+		}
+		processor.LogInstanceChannel <- logInstance
+		// fmt.Printf("logInstance: %v\n", logInstance)
 	}
 
-	logInstance := &models.LogInstance{
-		Destination: Destination,
-		URL:         URL,
-		Cookie:      Cookie,
-	}
-
-	fmt.Printf("logInstance: %v\n", logInstance)
 	return b.String()
 }
 
@@ -255,5 +256,6 @@ func NewVampAdapter(addr string) (Server, error) {
 		s.server = grpc.NewServer()
 	}
 	logentry.RegisterHandleLogEntryServiceServer(s.server, s)
+	go processor.Process()
 	return s, nil
 }

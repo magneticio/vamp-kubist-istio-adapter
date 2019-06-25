@@ -5,3 +5,27 @@ type LogInstance struct {
 	URL         string
 	Cookie      string
 }
+
+type SubsetStats struct {
+	NumberOfElements  float64
+	Average           float64
+	StandardDeviation float64
+}
+
+type Experiment struct {
+	Subsets map[string]*SubsetStats
+}
+
+type SubsetLogs struct {
+	UserLogs map[string]int
+}
+
+type ExperimentLogs struct {
+	SubsetLogs map[string]*SubsetLogs
+}
+
+type ExperimentConfiguration struct {
+	LandingPath string
+	TargetPath  string
+	Subsets     map[string]bool
+}
