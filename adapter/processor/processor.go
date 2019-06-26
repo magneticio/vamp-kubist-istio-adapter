@@ -3,6 +3,8 @@ package processor
 import (
 	"fmt"
 	"net/http"
+	"sync/atomic"
+	"time"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
@@ -11,7 +13,13 @@ import (
 const bufferSize = 1000
 
 var LogInstanceChannel = make(chan *models.LogInstance, bufferSize)
-var ExperimentLogs = make(map[string]models.ExperimentLogs)
+
+var ExperimentLoggers0 models.ExperimentLoggers
+var ExperimentLoggers1 models.ExperimentLoggers
+
+var activeLoggerID int32
+
+const RefreshPeriod = 30 * time.Second
 
 /*
 Example of a real log instance:
@@ -31,7 +39,22 @@ responseSize :  4405
 source :  gw-1-gateway
 */
 
-func Process() {
+func SetupProcessor() {
+	fmt.Println("SetupProcessor at ", time.Now(), "Refresh period: ", RefreshPeriod)
+	RefreshExperimentLoggers()
+	ticker := time.NewTicker(RefreshPeriod)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				RefreshExperimentLoggers()
+			}
+		}
+	}()
+}
+
+func RunProcessor() {
+	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel
 		fmt.Printf("logInstance: %v\n", logInstance)
@@ -58,23 +81,10 @@ func ProcessInstance(
 					userCookieName := experimentName + "_user"
 					if userCookie, cookieErr := request.Cookie(userCookieName); cookieErr == nil {
 						userID := userCookie.Value
-						if _, ok := ExperimentLogs[experimentName]; !ok {
-							ExperimentLogs[experimentName] = models.ExperimentLogs{
-								SubsetLogs: map[string]models.SubsetLogs{
-									subsetName: models.SubsetLogs{
-										UserLogs: map[string]int{userID: 0},
-									},
-								},
-							}
-						}
-						if _, ok := ExperimentLogs[experimentName].SubsetLogs[subsetName]; !ok {
-							ExperimentLogs[experimentName].SubsetLogs[subsetName] =
-								models.SubsetLogs{
-									UserLogs: map[string]int{userID: 0},
-								}
-						}
+						experimentLogger := GetExperimentLoggers()
+						CreateEntrySafe(experimentLogger, experimentName, subsetName, userID)
 						if logInstance.URL == experimentConf.TargetPath {
-							ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
+							experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
 						}
 					} else {
 						fmt.Printf("cookieErr: %v\n", cookieErr)
@@ -84,4 +94,68 @@ func ProcessInstance(
 			break
 		}
 	}
+}
+
+func CreateEntrySafe(experimentLogger *models.ExperimentLoggers, experimentName, subsetName, userID string) {
+	if experimentLogger.ExperimentLogs == nil {
+		experimentLogger.ExperimentLogs = make(map[string]models.ExperimentLogs)
+	}
+	if _, ok := experimentLogger.ExperimentLogs[experimentName]; !ok {
+		experimentLogger.ExperimentLogs[experimentName] = models.ExperimentLogs{
+			SubsetLogs: map[string]models.SubsetLogs{
+				subsetName: models.SubsetLogs{
+					UserLogs: map[string]int{userID: 0},
+				},
+			},
+		}
+	}
+	if _, ok := experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName]; !ok {
+		experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName] =
+			models.SubsetLogs{
+				UserLogs: map[string]int{userID: 0},
+			}
+	}
+}
+
+func GetExperimentLoggers() *models.ExperimentLoggers {
+	if atomic.LoadInt32(&activeLoggerID) == 0 {
+		return &ExperimentLoggers0
+	}
+	return &ExperimentLoggers1
+}
+
+func RefreshExperimentLoggers() error {
+	fmt.Println("Process and Clean Experiment Loggers at: ", time.Now())
+	if atomic.LoadInt32(&activeLoggerID) == 0 {
+		atomic.StoreInt32(&activeLoggerID, 1)
+		ProcessExperimentLoggers(&ExperimentLoggers1)
+		// clear
+		ExperimentLoggers1 = models.ExperimentLoggers{}
+		return nil
+	} else {
+		ProcessExperimentLoggers(&ExperimentLoggers0)
+		// clean
+		ExperimentLoggers0 = models.ExperimentLoggers{}
+		atomic.StoreInt32(&activeLoggerID, 0)
+		return nil
+	}
+}
+
+func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) {
+
+}
+
+// GetMergedExperimentLoggers is added for testing
+func GetMergedExperimentLoggers() *models.ExperimentLoggers {
+	experimentConfigurations := configurator.GetExperimentConfigurations()
+	merged := ExperimentLoggers0
+	for experimentName, experimentConf := range experimentConfigurations.ExperimentConfigurationMap {
+		for subsetName, _ := range experimentConf.Subsets {
+			for userID, count := range ExperimentLoggers1.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
+				CreateEntrySafe(&merged, experimentName, subsetName, userID)
+				merged.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID] += count
+			}
+		}
+	}
+	return &merged
 }

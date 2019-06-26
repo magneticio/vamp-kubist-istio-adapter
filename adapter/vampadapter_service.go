@@ -249,13 +249,13 @@ func NewVampAdapter(addr string) (Server, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("Starting server with credentials")
+		fmt.Printf("Starting server with credentials\n")
 		s.server = grpc.NewServer(so)
 	} else {
-		fmt.Printf("Starting server without credentials")
+		fmt.Printf("Starting server without credentials\n")
 		s.server = grpc.NewServer()
 	}
 	logentry.RegisterHandleLogEntryServiceServer(s.server, s)
-	go processor.Process()
+	go processor.RunProcessor()
 	return s, nil
 }

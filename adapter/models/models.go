@@ -24,6 +24,10 @@ type ExperimentLogs struct {
 	SubsetLogs map[string]SubsetLogs
 }
 
+type ExperimentLoggers struct {
+	ExperimentLogs map[string]ExperimentLogs
+}
+
 type ExperimentConfiguration struct {
 	LandingPath string
 	TargetPath  string

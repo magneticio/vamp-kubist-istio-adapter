@@ -48,7 +48,7 @@ func TestProcessIntance1(t *testing.T) {
 	experimentConfigurations := configurator.GetExperimentConfigurations()
 	processor.ProcessInstance(experimentConfigurations, logInstance1)
 
-	assert.Equal(t, 1, processor.ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
+	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
 	logInstance2 := &models.LogInstance{
 		Destination: destination,
@@ -57,7 +57,7 @@ func TestProcessIntance1(t *testing.T) {
 	}
 	processor.ProcessInstance(experimentConfigurations, logInstance2)
 
-	assert.Equal(t, 1, processor.ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
+	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
 	logInstance3 := &models.LogInstance{
 		Destination: destination,
@@ -66,7 +66,7 @@ func TestProcessIntance1(t *testing.T) {
 	}
 
 	processor.ProcessInstance(experimentConfigurations, logInstance3)
-	assert.Equal(t, 1, processor.ExperimentLogs[experimentName].SubsetLogs[subset2Name].UserLogs[user3ID])
+	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset2Name].UserLogs[user3ID])
 
 	logInstance4 := &models.LogInstance{
 		Destination: destination,
@@ -75,6 +75,6 @@ func TestProcessIntance1(t *testing.T) {
 	}
 
 	processor.ProcessInstance(experimentConfigurations, logInstance4)
-	assert.Equal(t, 2, processor.ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
+	assert.Equal(t, 2, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
 }

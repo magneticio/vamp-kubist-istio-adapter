@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/gogo/protobuf v1.2.1
+	github.com/imdario/mergo v0.3.7
 	github.com/magneticio/vampkubistcli v0.0.33
 	github.com/stretchr/testify v1.3.0
 	google.golang.org/grpc v1.21.1
