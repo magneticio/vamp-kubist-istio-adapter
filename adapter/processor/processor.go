@@ -11,7 +11,7 @@ import (
 const bufferSize = 1000
 
 var LogInstanceChannel = make(chan *models.LogInstance, bufferSize)
-var ExperimentLogs = make(map[string]*models.ExperimentLogs)
+var ExperimentLogs = make(map[string]models.ExperimentLogs)
 
 /*
 Example of a real log instance:
@@ -35,12 +35,12 @@ func Process() {
 	for {
 		logInstance := <-LogInstanceChannel
 		fmt.Printf("logInstance: %v\n", logInstance)
-		ProcessInstance(configurator.ExperimentConfigurations, logInstance)
+		ProcessInstance(configurator.GetExperimentConfigurations(), logInstance)
 	}
 }
 
 func ProcessInstance(
-	experimentConfigurations map[string]*models.ExperimentConfiguration,
+	experimentConfigurations *models.ExperimentConfigurations,
 	logInstance *models.LogInstance) {
 
 	header := http.Header{}
@@ -49,24 +49,19 @@ func ProcessInstance(
 		Header: header,
 	}
 
-	fmt.Println(request.Cookies())
-
 	for _, cookie := range request.Cookies() {
-		if experimentConf, ok := experimentConfigurations[cookie.Name]; ok {
-			fmt.Printf("experimentConf: %v\n", experimentConf)
+		if experimentConf, ok := experimentConfigurations.ExperimentConfigurationMap[cookie.Name]; ok {
 			experimentName := cookie.Name
-			if logInstance.URL == experimentConf.TargetPath {
-				fmt.Printf("target Matched \n")
+			if logInstance.URL == experimentConf.TargetPath || logInstance.URL == experimentConf.LandingPath {
 				if _, ok2 := experimentConf.Subsets[cookie.Value]; ok2 {
-					fmt.Printf("subset ok\n")
 					subsetName := cookie.Value
 					userCookieName := experimentName + "_user"
 					if userCookie, cookieErr := request.Cookie(userCookieName); cookieErr == nil {
 						userID := userCookie.Value
 						if _, ok := ExperimentLogs[experimentName]; !ok {
-							ExperimentLogs[experimentName] = &models.ExperimentLogs{
-								SubsetLogs: map[string]*models.SubsetLogs{
-									subsetName: &models.SubsetLogs{
+							ExperimentLogs[experimentName] = models.ExperimentLogs{
+								SubsetLogs: map[string]models.SubsetLogs{
+									subsetName: models.SubsetLogs{
 										UserLogs: map[string]int{userID: 0},
 									},
 								},
@@ -74,11 +69,13 @@ func ProcessInstance(
 						}
 						if _, ok := ExperimentLogs[experimentName].SubsetLogs[subsetName]; !ok {
 							ExperimentLogs[experimentName].SubsetLogs[subsetName] =
-								&models.SubsetLogs{
+								models.SubsetLogs{
 									UserLogs: map[string]int{userID: 0},
 								}
 						}
-						ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userCookie.Value]++
+						if logInstance.URL == experimentConf.TargetPath {
+							ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
+						}
 					} else {
 						fmt.Printf("cookieErr: %v\n", cookieErr)
 					}

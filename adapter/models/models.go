@@ -13,7 +13,7 @@ type SubsetStats struct {
 }
 
 type Experiment struct {
-	Subsets map[string]*SubsetStats
+	Subsets map[string]SubsetStats
 }
 
 type SubsetLogs struct {
@@ -21,11 +21,15 @@ type SubsetLogs struct {
 }
 
 type ExperimentLogs struct {
-	SubsetLogs map[string]*SubsetLogs
+	SubsetLogs map[string]SubsetLogs
 }
 
 type ExperimentConfiguration struct {
 	LandingPath string
 	TargetPath  string
 	Subsets     map[string]bool
+}
+
+type ExperimentConfigurations struct {
+	ExperimentConfigurationMap map[string]ExperimentConfiguration
 }

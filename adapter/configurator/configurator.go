@@ -1,27 +1,52 @@
 package configurator
 
 import (
+	"fmt"
+	"sync/atomic"
+	"time"
+
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 )
 
-type config struct {
-	Url            string `yaml:"url,omitempty" json:"url,omitempty"`
-	Cert           string `yaml:"cert,omitempty" json:"cert,omitempty"`
-	Username       string `yaml:"username,omitempty" json:"username,omitempty"`
-	Token          string `yaml:"token,omitempty" json:"token,omitempty"`
-	Project        string `yaml:"project,omitempty" json:"project,omitempty"`
-	Cluster        string `yaml:"cluster,omitempty" json:"cluster,omitempty"`
-	VirtualCluster string `yaml:"virtualcluster,omitempty" json:"virtualcluster,omitempty"`
-	APIVersion     string `yaml:"apiversion,omitempty" json:"apiversion,omitempty"`
+var ExperimentConfigurations0 models.ExperimentConfigurations
+var ExperimentConfigurations1 models.ExperimentConfigurations
+
+var activeConfigurationID int32
+
+const RefreshPeriod = 30 * time.Second
+
+func GetExperimentConfigurations() *models.ExperimentConfigurations {
+	if atomic.LoadInt32(&activeConfigurationID) == 0 {
+		return &ExperimentConfigurations0
+	}
+	return &ExperimentConfigurations1
 }
 
-var Config config
+func GenerateNewExperimentConfigurations() models.ExperimentConfigurations {
+	return ExperimentConfigurations0
+}
 
-// var Experiments map[string]Experiment
+func RefreshExperimentConfigurations(tick time.Time) error {
+	fmt.Println("Tick at: ", tick)
+	if atomic.LoadInt32(&activeConfigurationID) == 0 {
+		ExperimentConfigurations1 = GenerateNewExperimentConfigurations()
+		atomic.StoreInt32(&activeConfigurationID, 1)
+		return nil
+	} else {
+		ExperimentConfigurations0 = GenerateNewExperimentConfigurations()
+		atomic.StoreInt32(&activeConfigurationID, 0)
+		return nil
+	}
+}
 
-var ExperimentConfigurations map[string]*models.ExperimentConfiguration
-
-func query() error {
-	// restClient := client.NewRestClient(Config.Url, Config.Token, Config.APIVersion, logging.Verbose, Config.Cert)
-	return nil
+func SetupConfigurator() {
+	ticker := time.NewTicker(RefreshPeriod)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				RefreshExperimentConfigurations(<-ticker.C)
+			}
+		}
+	}()
 }
