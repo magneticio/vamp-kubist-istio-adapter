@@ -26,6 +26,8 @@ func TestProcessIntance1(t *testing.T) {
 	targetPath := "/target"
 	destination := "demo-app"
 
+	go processor.RunProcessor()
+
 	experimentConfigurationMap := make(map[string]models.ExperimentConfiguration)
 	experimentConfigurationMap[experimentName] = models.ExperimentConfiguration{
 		LandingPath: landingPath,
@@ -38,7 +40,7 @@ func TestProcessIntance1(t *testing.T) {
 
 	configurator.ExperimentConfigurations0.ExperimentConfigurationMap = experimentConfigurationMap
 	configurator.SetupConfigurator()
-	time.Sleep(70 * time.Second)
+
 	logInstance1 := &models.LogInstance{
 		Destination: destination,
 		URL:         targetPath,
@@ -77,4 +79,5 @@ func TestProcessIntance1(t *testing.T) {
 	processor.ProcessInstance(experimentConfigurations, logInstance4)
 	assert.Equal(t, 2, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
+	time.Sleep(70 * time.Second)
 }

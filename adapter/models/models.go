@@ -12,7 +12,7 @@ type SubsetStats struct {
 	StandardDeviation float64
 }
 
-type Experiment struct {
+type ExperimentStats struct {
 	Subsets map[string]SubsetStats
 }
 

@@ -2,6 +2,7 @@ package processor
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"sync/atomic"
 	"time"
@@ -19,7 +20,7 @@ var ExperimentLoggers1 models.ExperimentLoggers
 
 var activeLoggerID int32
 
-const RefreshPeriod = 30 * time.Second
+const RefreshPeriod = 10 * time.Second
 
 /*
 Example of a real log instance:
@@ -142,7 +143,58 @@ func RefreshExperimentLoggers() error {
 }
 
 func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) {
+	if experimentLoggers == nil {
+		return
+	}
+	experimentStatsMap := make(map[string]models.ExperimentStats)
+	experimentConfigurations := configurator.GetExperimentConfigurations()
+	for experimentName, experimentConf := range experimentConfigurations.ExperimentConfigurationMap {
+		if _, ok := experimentLoggers.ExperimentLogs[experimentName]; !ok {
+			continue
+		}
+		for subsetName := range experimentConf.Subsets {
+			if _, ok2 := experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName]; !ok2 {
+				continue
+			}
+			n := float64(len(experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs))
+			if n == 0 {
+				continue
+			}
+			experimentStatsMap[experimentName] = models.ExperimentStats{
+				Subsets: make(map[string]models.SubsetStats),
+			}
+			experimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
+				NumberOfElements:  n,
+				Average:           0,
+				StandardDeviation: 0,
+			}
+			var average float64 = 0
+			for _, count := range experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
+				average += float64(count) / n
+			}
+			experimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
+				NumberOfElements:  n,
+				Average:           average,
+				StandardDeviation: 0,
+			}
+			if n < 1 {
+				continue
+			}
+			var differentiationSum float64 = 0
+			for _, count := range experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
+				differentiationSum += math.Pow(float64(count)-average, 2) / n
+			}
 
+			standardDeviation := math.Sqrt(differentiationSum)
+			experimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
+				NumberOfElements:  n,
+				Average:           average,
+				StandardDeviation: standardDeviation,
+			}
+		}
+	}
+	fmt.Printf("experimentStatsMap: %v\n", experimentStatsMap)
+	// send stats to the server
 }
 
 // GetMergedExperimentLoggers is added for testing
@@ -150,7 +202,7 @@ func GetMergedExperimentLoggers() *models.ExperimentLoggers {
 	experimentConfigurations := configurator.GetExperimentConfigurations()
 	merged := ExperimentLoggers0
 	for experimentName, experimentConf := range experimentConfigurations.ExperimentConfigurationMap {
-		for subsetName, _ := range experimentConf.Subsets {
+		for subsetName := range experimentConf.Subsets {
 			for userID, count := range ExperimentLoggers1.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
 				CreateEntrySafe(&merged, experimentName, subsetName, userID)
 				merged.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID] += count
