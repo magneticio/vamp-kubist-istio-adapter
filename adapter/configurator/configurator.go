@@ -22,12 +22,16 @@ func GetExperimentConfigurations() *models.ExperimentConfigurations {
 	return &ExperimentConfigurations1
 }
 
+// GenerateNewExperimentConfigurations gets experiments from the service
 func GenerateNewExperimentConfigurations() models.ExperimentConfigurations {
+	// for a virtual cluster get list of experiments
+	// loop through experiment configurations
+	// merge results into a map
 	return ExperimentConfigurations0
 }
 
-func RefreshExperimentConfigurations(tick time.Time) error {
-	fmt.Println("Tick at: ", tick)
+func RefreshExperimentConfigurations() error {
+	fmt.Println("Refresh Experiment Configurations at: ", time.Now())
 	if atomic.LoadInt32(&activeConfigurationID) == 0 {
 		ExperimentConfigurations1 = GenerateNewExperimentConfigurations()
 		atomic.StoreInt32(&activeConfigurationID, 1)
@@ -40,12 +44,14 @@ func RefreshExperimentConfigurations(tick time.Time) error {
 }
 
 func SetupConfigurator() {
+	fmt.Println("SetupConfigurator at ", time.Now(), "Refresh period: ", RefreshPeriod)
+	RefreshExperimentConfigurations()
 	ticker := time.NewTicker(RefreshPeriod)
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				RefreshExperimentConfigurations(<-ticker.C)
+				RefreshExperimentConfigurations()
 			}
 		}
 	}()

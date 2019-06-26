@@ -2,6 +2,7 @@ package processor_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
@@ -15,8 +16,6 @@ func generateCookie(experimentName, userID, subsetName string) string {
 }
 
 func TestProcessIntance1(t *testing.T) {
-	configurator.SetupConfigurator()
-
 	experimentName := "ex-1"
 	subset1Name := "dest-1-9191-subset1"
 	subset2Name := "dest-1-9191-subset2"
@@ -38,7 +37,8 @@ func TestProcessIntance1(t *testing.T) {
 	}
 
 	configurator.ExperimentConfigurations0.ExperimentConfigurationMap = experimentConfigurationMap
-
+	configurator.SetupConfigurator()
+	time.Sleep(70 * time.Second)
 	logInstance1 := &models.LogInstance{
 		Destination: destination,
 		URL:         targetPath,
