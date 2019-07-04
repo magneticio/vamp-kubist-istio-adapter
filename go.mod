@@ -3,9 +3,11 @@ module github.com/magneticio/vamp-kubist-istio-adapter
 go 1.12
 
 require (
+	github.com/go-delve/delve v1.2.0
 	github.com/gogo/protobuf v1.2.1
 	github.com/imdario/mergo v0.3.7
-	github.com/magneticio/vampkubistcli v0.0.33
+	github.com/magneticio/vampkubistcli v0.0.37
+	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
 	google.golang.org/grpc v1.21.1
 	istio.io/api v0.0.0-20190618184921-868f99fbab12

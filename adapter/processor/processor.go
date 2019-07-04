@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"regexp"
 	"sync/atomic"
 	"time"
 
@@ -55,6 +56,7 @@ func SetupProcessor() {
 }
 
 func RunProcessor() {
+	configurator.SetupConfigurator()
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel
@@ -76,20 +78,19 @@ func ProcessInstance(
 	for _, cookie := range request.Cookies() {
 		if experimentConf, ok := experimentConfigurations.ExperimentConfigurationMap[cookie.Name]; ok {
 			experimentName := cookie.Name
-			if logInstance.URL == experimentConf.TargetPath || logInstance.URL == experimentConf.LandingPath {
-				if _, ok2 := experimentConf.Subsets[cookie.Value]; ok2 {
-					subsetName := cookie.Value
-					userCookieName := experimentName + "_user"
-					if userCookie, cookieErr := request.Cookie(userCookieName); cookieErr == nil {
-						userID := userCookie.Value
-						experimentLogger := GetExperimentLoggers()
-						CreateEntrySafe(experimentLogger, experimentName, subsetName, userID)
-						if logInstance.URL == experimentConf.TargetPath {
-							experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
-						}
-					} else {
-						fmt.Printf("cookieErr: %v\n", cookieErr)
+			if targetPath, ok2 := experimentConf.Subsets[cookie.Value]; ok2 {
+				subsetName := cookie.Value
+				userCookieName := experimentName + "_user"
+				if userCookie, cookieErr := request.Cookie(userCookieName); cookieErr == nil {
+					userID := userCookie.Value
+					experimentLogger := GetExperimentLoggers()
+					CreateEntrySafe(experimentLogger, experimentName, subsetName, userID)
+					targetRegex, _ := regexp.Compile(targetPath)
+					if targetRegex.MatchString(logInstance.URL) {
+						experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
 					}
+				} else {
+					fmt.Printf("cookieErr: %v\n", cookieErr)
 				}
 			}
 			break

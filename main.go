@@ -19,9 +19,12 @@ import (
 	"os"
 
 	vampadapter "github.com/magneticio/vamp-kubist-istio-adapter/adapter"
+	"github.com/magneticio/vampkubistcli/logging"
 )
 
 func main() {
+	logging.Verbose = true
+	logging.Init(os.Stdout, os.Stderr)
 	addr := "9000"
 	if len(os.Args) > 1 {
 		addr = os.Args[1]

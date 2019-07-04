@@ -29,11 +29,26 @@ type ExperimentLoggers struct {
 }
 
 type ExperimentConfiguration struct {
-	LandingPath string
-	TargetPath  string
-	Subsets     map[string]bool
+	Subsets map[string]string
 }
 
 type ExperimentConfigurations struct {
 	ExperimentConfigurationMap map[string]ExperimentConfiguration
+}
+
+//-------------------------//
+
+type ExperimentDestination struct {
+	Port        int64  `yaml:"port,omitempty" json:"port,omitempty"`
+	Subset      string `yaml:"subset,omitempty" json:"subset,omitempty"`
+	Target      string `yaml:"target,omitempty" json:"target,omitempty"`
+	Destination string `yaml:"destination,omitempty" json:"destination,omitempty"`
+}
+type ExperimentSpecification struct {
+	Destinations []ExperimentDestination `yaml:"destinations,omitempty" json:"destinations,omitempty"`
+}
+
+type Experiment struct {
+	Name          string                  `yaml:"name,omitempty" json:"name,omitempty"`
+	Specification ExperimentSpecification `yaml:"specification,omitempty" json:"specification,omitempty"`
 }

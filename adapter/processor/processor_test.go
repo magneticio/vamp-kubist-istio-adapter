@@ -22,7 +22,6 @@ func TestProcessIntance1(t *testing.T) {
 	user1ID := "50244035-d34d-4692-98fa-d473181fbbbe"
 	user2ID := "3c445470-721f-48d2-ad4a-02de5d19988c"
 	user3ID := "3cdeeadd-5c27-4b24-b1c6-fc4e09f8ccc7"
-	landingPath := "/"
 	targetPath := "/target"
 	destination := "demo-app"
 
@@ -30,11 +29,9 @@ func TestProcessIntance1(t *testing.T) {
 
 	experimentConfigurationMap := make(map[string]models.ExperimentConfiguration)
 	experimentConfigurationMap[experimentName] = models.ExperimentConfiguration{
-		LandingPath: landingPath,
-		TargetPath:  targetPath,
-		Subsets: map[string]bool{
-			subset1Name: true,
-			subset2Name: true,
+		Subsets: map[string]string{
+			subset1Name: targetPath,
+			subset2Name: targetPath,
 		},
 	}
 
