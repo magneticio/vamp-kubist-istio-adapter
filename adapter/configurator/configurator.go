@@ -11,6 +11,7 @@ import (
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vampkubistcli/client"
 	"github.com/magneticio/vampkubistcli/logging"
+	clientmodels "github.com/magneticio/vampkubistcli/models"
 	"github.com/spf13/viper"
 )
 
@@ -21,7 +22,6 @@ var activeConfigurationID int32
 
 const RefreshPeriod = 30 * time.Second
 
-var _restClient *client.RestClient
 var URL string
 var Token string
 var APIVersion string
@@ -31,21 +31,19 @@ var Project string
 var Cluster string
 var VirtualCluster string
 
-func initViperConfig(path string) {
-	viper.SetConfigName("vamp-config") // name of config file (without extension)
-	viper.AddConfigPath(path)          // path to look for the config file in
-	viper.AddConfigPath(".")           // optionally look for config in the working directory
-	err := viper.ReadInConfig()        // Find and read the config file
-	if err != nil {                    // Handle errors reading the config file
+func InitViperConfig(path string, configName string) {
+	viper.SetConfigName(configName) // name of config file (without extension)
+	viper.AddConfigPath(path)       // path to look for the config file in
+	viper.AddConfigPath(".")        // optionally look for config in the working directory
+	err := viper.ReadInConfig()     // Find and read the config file
+	if err != nil {                 // Handle errors reading the config file
 		// panic(fmt.Errorf("Fatal error config file: %s \n", err))
-		logging.Error("Fatal error config file: %s \n", err)
+		logging.Error("Error config file: %s \n", err)
 	}
 }
 
 func getRestClient() (*client.RestClient, error) {
-	if _restClient != nil {
-		return _restClient, nil
-	}
+	// Add client pooling
 	URL = viper.GetString("url")
 	Token = viper.GetString("token")
 	APIVersion = viper.GetString("apiversion")
@@ -57,11 +55,11 @@ func getRestClient() (*client.RestClient, error) {
 	Cert = string(certByte) */
 	Cert = viper.GetString("cert")
 	TokenStore = &client.InMemoryTokenStore{}
-	_restClient := client.NewRestClient(URL, Token, APIVersion, false, Cert, &TokenStore)
-	if _restClient == nil {
+	restClient := client.NewRestClient(URL, Token, APIVersion, false, Cert, &TokenStore)
+	if restClient == nil {
 		return nil, errors.New("Rest Client can not be initiliazed")
 	}
-	return _restClient, nil
+	return restClient, nil
 }
 
 func GetExperimentConfigurations() *models.ExperimentConfigurations {
@@ -96,8 +94,6 @@ func ParseExperimentConfiguration(sourceAsJson string) (*models.ExperimentConfig
 
 // GenerateNewExperimentConfigurations gets experiments from the service
 func GenerateNewExperimentConfigurations() (*models.ExperimentConfigurations, error) {
-	// "/tmp/documentation1/vamp-config.yaml"
-	initViperConfig("/tmp/documentation1")
 	restClient, restCLientError := getRestClient()
 	if restCLientError != nil {
 		return nil, errors.New("Rest Client can not be initiliazed")
@@ -154,4 +150,34 @@ func SetupConfigurator() {
 			}
 		}
 	}()
+}
+
+func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) error {
+	restClient, restCLientError := getRestClient()
+	if restCLientError != nil {
+		return errors.New("Rest Client can not be initiliazed")
+	}
+	Project = viper.GetString("project")
+	Cluster = viper.GetString("cluster")
+	VirtualCluster = viper.GetString("virtualcluster")
+	values := make(map[string]string)
+	values["project"] = Project
+	values["cluster"] = Cluster
+	values["virtual_cluster"] = VirtualCluster
+
+	for experimentName, experimentStat := range experimentStatsGroup.ExperimentStatsMap {
+		for subsetName, subsetStat := range experimentStat.Subsets {
+			metric := &clientmodels.ExperimentMetric{
+				Timestamp:         time.Now().Unix(),
+				NumberOfElements:  int64(subsetStat.NumberOfElements),
+				StandardDeviation: subsetStat.StandardDeviation,
+				Average:           subsetStat.Average,
+			}
+			sendExperimentError := restClient.SendExperimentMetric(experimentName, subsetName, metric, values)
+			if sendExperimentError != nil {
+				logging.Error("SendExperimentError: %v\n", sendExperimentError)
+			}
+		}
+	}
+	return nil
 }

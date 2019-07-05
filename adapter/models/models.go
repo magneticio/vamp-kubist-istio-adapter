@@ -16,6 +16,10 @@ type ExperimentStats struct {
 	Subsets map[string]SubsetStats
 }
 
+type ExperimentStatsGroup struct {
+	ExperimentStatsMap map[string]ExperimentStats
+}
+
 type SubsetLogs struct {
 	UserLogs map[string]int
 }

@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -18,6 +19,9 @@ var LogInstanceChannel = make(chan *models.LogInstance, bufferSize)
 
 var ExperimentLoggers0 models.ExperimentLoggers
 var ExperimentLoggers1 models.ExperimentLoggers
+
+// this is added for testing
+var SendExperimentLoggers = true
 
 var activeLoggerID int32
 
@@ -130,12 +134,18 @@ func RefreshExperimentLoggers() error {
 	fmt.Println("Process and Clean Experiment Loggers at: ", time.Now())
 	if atomic.LoadInt32(&activeLoggerID) == 0 {
 		atomic.StoreInt32(&activeLoggerID, 1)
-		ProcessExperimentLoggers(&ExperimentLoggers1)
+		processError := ProcessExperimentLoggers(&ExperimentLoggers1)
+		if processError != nil {
+			return processError
+		}
 		// clear
 		ExperimentLoggers1 = models.ExperimentLoggers{}
 		return nil
 	} else {
-		ProcessExperimentLoggers(&ExperimentLoggers0)
+		processError := ProcessExperimentLoggers(&ExperimentLoggers0)
+		if processError != nil {
+			return processError
+		}
 		// clean
 		ExperimentLoggers0 = models.ExperimentLoggers{}
 		atomic.StoreInt32(&activeLoggerID, 0)
@@ -143,11 +153,14 @@ func RefreshExperimentLoggers() error {
 	}
 }
 
-func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) {
+func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error {
 	if experimentLoggers == nil {
-		return
+		return errors.New("experimentLoggers is nil")
 	}
-	experimentStatsMap := make(map[string]models.ExperimentStats)
+	experimentStatsGroup := &models.ExperimentStatsGroup{
+		ExperimentStatsMap: make(map[string]models.ExperimentStats),
+	}
+	// experimentStatsMap := make(map[string]models.ExperimentStats)
 	experimentConfigurations := configurator.GetExperimentConfigurations()
 	for experimentName, experimentConf := range experimentConfigurations.ExperimentConfigurationMap {
 		if _, ok := experimentLoggers.ExperimentLogs[experimentName]; !ok {
@@ -161,10 +174,10 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) {
 			if n == 0 {
 				continue
 			}
-			experimentStatsMap[experimentName] = models.ExperimentStats{
+			experimentStatsGroup.ExperimentStatsMap[experimentName] = models.ExperimentStats{
 				Subsets: make(map[string]models.SubsetStats),
 			}
-			experimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
+			experimentStatsGroup.ExperimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
 				NumberOfElements:  n,
 				Average:           0,
 				StandardDeviation: 0,
@@ -173,7 +186,7 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) {
 			for _, count := range experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
 				average += float64(count) / n
 			}
-			experimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
+			experimentStatsGroup.ExperimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
 				NumberOfElements:  n,
 				Average:           average,
 				StandardDeviation: 0,
@@ -187,15 +200,20 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) {
 			}
 
 			standardDeviation := math.Sqrt(differentiationSum)
-			experimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
+			experimentStatsGroup.ExperimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
 				NumberOfElements:  n,
 				Average:           average,
 				StandardDeviation: standardDeviation,
 			}
 		}
 	}
-	fmt.Printf("experimentStatsMap: %v\n", experimentStatsMap)
-	// send stats to the server
+	fmt.Printf("experimentStatsMap: %v\n", experimentStatsGroup.ExperimentStatsMap)
+	if SendExperimentLoggers {
+		// send stats to the server
+		return configurator.SendExperimentStats(experimentStatsGroup)
+	} else {
+		return nil
+	}
 }
 
 // GetMergedExperimentLoggers is added for testing

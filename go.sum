@@ -230,6 +230,8 @@ github.com/magneticio/vampkubistcli v0.0.35 h1:p6YY5JOwFMrnc9FSWZBYg9KcajAdeCFGx
 github.com/magneticio/vampkubistcli v0.0.35/go.mod h1:Re71vsnK40x5QTTtSz2P8SrYDwRrIzQ1KYxY72fhmFM=
 github.com/magneticio/vampkubistcli v0.0.37 h1:8w6GFiUszWhhmb6WjMMAmlUa2IIn6ycYAqXvTk/b8wM=
 github.com/magneticio/vampkubistcli v0.0.37/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
+github.com/magneticio/vampkubistcli v0.0.38 h1:7FnXpIR3rq5NLA673xRdJqUDPbxFKSsz/9KhtyFs6xo=
+github.com/magneticio/vampkubistcli v0.0.38/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
 github.com/mattn/go-colorable v0.0.0-20170327083344-ded68f7a9561/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=

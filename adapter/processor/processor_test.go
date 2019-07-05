@@ -25,8 +25,6 @@ func TestProcessIntance1(t *testing.T) {
 	targetPath := "/target"
 	destination := "demo-app"
 
-	go processor.RunProcessor()
-
 	experimentConfigurationMap := make(map[string]models.ExperimentConfiguration)
 	experimentConfigurationMap[experimentName] = models.ExperimentConfiguration{
 		Subsets: map[string]string{
@@ -36,7 +34,10 @@ func TestProcessIntance1(t *testing.T) {
 	}
 
 	configurator.ExperimentConfigurations0.ExperimentConfigurationMap = experimentConfigurationMap
-	configurator.SetupConfigurator()
+
+	processor.SendExperimentLoggers = false
+	// This also runs setup configurator
+	go processor.RunProcessor()
 
 	logInstance1 := &models.LogInstance{
 		Destination: destination,
