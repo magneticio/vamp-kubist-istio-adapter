@@ -11,6 +11,7 @@ import (
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
+	"github.com/magneticio/vampkubistcli/logging"
 )
 
 const bufferSize = 1000
@@ -64,7 +65,7 @@ func RunProcessor() {
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel
-		fmt.Printf("logInstance: %v\n", logInstance)
+		// fmt.Printf("logInstance: %v\n", logInstance)
 		ProcessInstance(configurator.GetExperimentConfigurations(), logInstance)
 	}
 }
@@ -74,13 +75,16 @@ func ProcessInstance(
 	logInstance *models.LogInstance) {
 
 	header := http.Header{}
+	override := "ex-1_user=3c445470-721f-48d2-ad4a-02de5d19988c;ex-1=dest-1-9191-subset2;"
+	logInstance.Cookie = override
 	header.Add("Cookie", logInstance.Cookie)
 	request := http.Request{
 		Header: header,
 	}
-
+	logging.Info("Processing Cookies\n")
 	for _, cookie := range request.Cookies() {
 		if experimentConf, ok := experimentConfigurations.ExperimentConfigurationMap[cookie.Name]; ok {
+			logging.Info("Cookie: %v\n", cookie.Value)
 			experimentName := cookie.Name
 			if targetPath, ok2 := experimentConf.Subsets[cookie.Value]; ok2 {
 				subsetName := cookie.Value

@@ -77,8 +77,8 @@ type InstanceMsg struct {
 // HandleLogEntry records log entries
 func (s *VampAdapter) HandleLogEntry(ctx context.Context, r *logentry.HandleLogEntryRequest) (*v1beta1.ReportResult, error) {
 
-	fmt.Printf("received request %v\n", *r)
-	var b bytes.Buffer
+	// fmt.Printf("received request %v\n", *r)
+	// var b bytes.Buffer
 	cfg := &config.Params{}
 
 	if r.AdapterConfig != nil {
@@ -88,28 +88,33 @@ func (s *VampAdapter) HandleLogEntry(ctx context.Context, r *logentry.HandleLogE
 		}
 	}
 
-	b.WriteString(fmt.Sprintf("HandleMetric invoked with:\n  Adapter config: %s\n  Instances: %s\n",
-		cfg.String(), s.instances(r.Instances)))
+	s.instances(r.Instances)
 
-	if cfg.FilePath == "" {
-		fmt.Println(b.String())
-	} else {
-		_, err := os.OpenFile("out.txt", os.O_RDONLY|os.O_CREATE, 0666)
-		if err != nil {
-			fmt.Printf("error creating file: %v", err)
-		}
-		f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY, 0600)
-		if err != nil {
-			fmt.Printf("error opening file for append: %v", err)
-		}
+	/*
+		  // this is not needed for this adapter
+		  b.WriteString(fmt.Sprintf("HandleMetric invoked with:\n  Adapter config: %s\n  Instances: %s\n",
+				cfg.String(), s.instances(r.Instances)))
 
-		defer f.Close()
+			if cfg.FilePath == "" {
+				fmt.Println(b.String())
+			} else {
+				_, err := os.OpenFile("out.txt", os.O_RDONLY|os.O_CREATE, 0666)
+				if err != nil {
+					fmt.Printf("error creating file: %v", err)
+				}
+				f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY, 0600)
+				if err != nil {
+					fmt.Printf("error opening file for append: %v", err)
+				}
 
-		fmt.Printf("writing instances to file %s", f.Name())
-		if _, err = f.Write(b.Bytes()); err != nil {
-			fmt.Printf("error writing to file: %v", err)
-		}
-	}
+				defer f.Close()
+
+				fmt.Printf("writing instances to file %s", f.Name())
+				if _, err = f.Write(b.Bytes()); err != nil {
+					fmt.Printf("error writing to file: %v", err)
+				}
+			}
+	*/
 
 	return nil, nil
 }
@@ -148,12 +153,12 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 	var Cookie string
 	var Destination string
 	for _, inst := range in {
-		timeStamp := inst.Timestamp.Value.String()
-		severity := inst.Severity
-		fmt.Println("TimeStamp: ", timeStamp)
-		fmt.Println("Severity: ", severity)
+		// timeStamp := inst.Timestamp.Value.String()
+		// severity := inst.Severity
+		// fmt.Println("TimeStamp: ", timeStamp)
+		// fmt.Println("Severity: ", severity)
 		for k, v := range inst.Variables {
-			fmt.Println(k, ": ", decodeValue(v.GetValue()))
+			// fmt.Println(k, ": ", decodeValue(v.GetValue()))
 			if k == "cookies" {
 				Cookie = fmt.Sprintf("%v", decodeValue(v.GetValue()))
 			} else if k == "url" {

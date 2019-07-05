@@ -177,6 +177,7 @@ func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) erro
 			if sendExperimentError != nil {
 				logging.Error("SendExperimentError: %v\n", sendExperimentError)
 			}
+			logging.Info("Results sent.\n")
 		}
 	}
 	return nil

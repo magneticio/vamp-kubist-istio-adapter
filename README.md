@@ -39,7 +39,7 @@ Open another shell and run:
 
 ```shell
 cd $GOPATH
-watch -n 5  ./out/darwin_amd64/release/mixc report --timestamp_attributes request.time="2017-07-04T00:01:10Z" -i request.size=1235 -s request.path="http://some.democluster.net/target.html",destination.service="svc.cluster.local",destination.name="experimentedservice" --stringmap_attributes "request.headers=cookie:ex-1_user=3c445470-721f-48d2-ad4a-02de5d19988c"
+watch -n 5  ./out/darwin_amd64/release/mixc report --timestamp_attributes request.time="2017-07-04T00:01:10Z" -i request.size=1235 -s request.path="/cart?variant_id=1",destination.service="svc.cluster.local",destination.name="experimentedservice" --stringmap_attributes "request.headers=cookie:ex-1_user=3c445470-721f-48d2-ad4a-02de5d19988c%3Bex-1=dest-1-9191-subset1%3B"
 ```
 
 And in your project folder run:
