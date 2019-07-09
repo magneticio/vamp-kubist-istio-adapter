@@ -3,7 +3,6 @@ package configurator
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -37,7 +36,6 @@ func InitViperConfig(path string, configName string) {
 	viper.AddConfigPath(".")        // optionally look for config in the working directory
 	err := viper.ReadInConfig()     // Find and read the config file
 	if err != nil {                 // Handle errors reading the config file
-		// panic(fmt.Errorf("Fatal error config file: %s \n", err))
 		logging.Error("Error config file: %s \n", err)
 	}
 }
@@ -47,12 +45,6 @@ func getRestClient() (*client.RestClient, error) {
 	URL = viper.GetString("url")
 	Token = viper.GetString("token")
 	APIVersion = viper.GetString("apiversion")
-	/* certEncoded := viper.GetString("cert")
-	certByte, certDecodeError := base64.StdEncoding.DecodeString(certEncoded)
-	if certDecodeError != nil {
-		return nil, certDecodeError
-	}
-	Cert = string(certByte) */
 	Cert = viper.GetString("cert")
 	TokenStore = &client.InMemoryTokenStore{}
 	restClient := client.NewRestClient(URL, Token, APIVersion, false, Cert, &TokenStore)
@@ -118,7 +110,7 @@ func GenerateNewExperimentConfigurations() (*models.ExperimentConfigurations, er
 }
 
 func RefreshExperimentConfigurations() error {
-	fmt.Println("Refresh Experiment Configurations at: ", time.Now())
+	logging.Info("Refresh Experiment Configurations at: %v\n", time.Now())
 	if atomic.LoadInt32(&activeConfigurationID) == 0 {
 		experimentConfigurations, confError := GenerateNewExperimentConfigurations()
 		if confError != nil {
@@ -139,7 +131,7 @@ func RefreshExperimentConfigurations() error {
 }
 
 func SetupConfigurator() {
-	fmt.Println("SetupConfigurator at ", time.Now(), "Refresh period: ", RefreshPeriod)
+	logging.Info("SetupConfigurator at %v Refresh period: %v\n", time.Now(), RefreshPeriod)
 	RefreshExperimentConfigurations()
 	ticker := time.NewTicker(RefreshPeriod)
 	go func() {

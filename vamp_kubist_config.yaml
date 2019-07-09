@@ -106,6 +106,19 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ""
     spec:
       containers:
+      - env:
+        - name: VAMP_URL
+          value: "https://...:8888"
+        - name: VAMP_TOKEN
+          value: "..."
+        - name: VAMP_CERT
+          value: "..."
+        - name: VAMP_PROJECT
+          value: "..."
+        - name: VAMP_CLUSTER
+          value: "..."
+        - name: VAMP_VIRTUALCLUSTER
+          value: "..."
       - name: vampadapter
         image: magneticio/vampkubist-istio-adapter:v0.0.1
         imagePullPolicy: Always

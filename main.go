@@ -19,15 +19,31 @@ import (
 	"os"
 
 	vampadapter "github.com/magneticio/vamp-kubist-istio-adapter/adapter"
-	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
 	"github.com/magneticio/vampkubistcli/logging"
+	"github.com/spf13/viper"
 )
 
 func main() {
-	logging.Verbose = true
+	viper.SetEnvPrefix("vamp")
+	viper.BindEnv("url")
+	viper.BindEnv("token")
+	viper.BindEnv("apiversion")
+	viper.BindEnv("cert")
+	viper.BindEnv("project")
+	viper.BindEnv("cluster")
+	viper.BindEnv("virtualcluster")
+	viper.BindEnv("logging")
+	viper.SetDefault("logging", "verbose")
+
+	fmt.Printf("URL: %v\n", viper.GetString("url"))
+
+	if viper.GetString("logging") == "verbose" {
+		logging.Verbose = true
+	}
 	logging.Init(os.Stdout, os.Stderr)
+	// This is kept for testing
 	// "/tmp/documentation1/vamp-config.yaml"
-	configurator.InitViperConfig("/tmp/documentation1", "vamp-config")
+	// configurator.InitViperConfig("/tmp/documentation1", "vamp-config")
 	addr := "9000"
 	if len(os.Args) > 1 {
 		addr = os.Args[1]

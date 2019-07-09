@@ -49,3 +49,21 @@ go run main.go
 ```
 
 You should see the logs appearing on your main process output.
+
+List of environment variables:
+
+VAMP_URL : url of the vamp deployment
+
+VAMP_TOKEN : refresh token of for the client
+
+VAMP_APIVERSION : api version, it can be empty for default
+
+VAMP_CERT : certificates of vamp deployment for secure connection
+
+VAMP_PROJECT : project name in vamp
+
+VAMP_CLUSTER : cluster name in vamp
+
+VAMP_VIRTUALCLUSTER : virtualcluster name in vamp
+
+VAMP_LOGGING : it can be verbose or anything else to disable, verbose by default

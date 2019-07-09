@@ -2,7 +2,6 @@ package processor
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"net/http"
 	"regexp"
@@ -47,7 +46,7 @@ source :  gw-1-gateway
 */
 
 func SetupProcessor() {
-	fmt.Println("SetupProcessor at ", time.Now(), "Refresh period: ", RefreshPeriod)
+	logging.Info("SetupProcessor at %v Refresh period: %v\n", time.Now(), RefreshPeriod)
 	RefreshExperimentLoggers()
 	ticker := time.NewTicker(RefreshPeriod)
 	go func() {
@@ -65,7 +64,6 @@ func RunProcessor() {
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel
-		// fmt.Printf("logInstance: %v\n", logInstance)
 		ProcessInstance(configurator.GetExperimentConfigurations(), logInstance)
 	}
 }
@@ -98,7 +96,7 @@ func ProcessInstance(
 						experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
 					}
 				} else {
-					fmt.Printf("cookieErr: %v\n", cookieErr)
+					logging.Error("cookieErr: %v\n", cookieErr)
 				}
 			}
 			break
@@ -135,7 +133,7 @@ func GetExperimentLoggers() *models.ExperimentLoggers {
 }
 
 func RefreshExperimentLoggers() error {
-	fmt.Println("Process and Clean Experiment Loggers at: ", time.Now())
+	logging.Info("Process and Clean Experiment Loggers at: %v\n", time.Now())
 	if atomic.LoadInt32(&activeLoggerID) == 0 {
 		atomic.StoreInt32(&activeLoggerID, 1)
 		processError := ProcessExperimentLoggers(&ExperimentLoggers1)
@@ -211,7 +209,7 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error
 			}
 		}
 	}
-	fmt.Printf("experimentStatsMap: %v\n", experimentStatsGroup.ExperimentStatsMap)
+	logging.Info("experimentStatsMap: %v\n", experimentStatsGroup.ExperimentStatsMap)
 	if SendExperimentLoggers {
 		// send stats to the server
 		return configurator.SendExperimentStats(experimentStatsGroup)
