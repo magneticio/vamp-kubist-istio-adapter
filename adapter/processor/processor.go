@@ -73,8 +73,6 @@ func ProcessInstance(
 	logInstance *models.LogInstance) {
 
 	header := http.Header{}
-	override := "ex-1_user=3c445470-721f-48d2-ad4a-02de5d19988c;ex-1=dest-1-9191-subset2;"
-	logInstance.Cookie = override
 	header.Add("Cookie", logInstance.Cookie)
 	request := http.Request{
 		Header: header,
