@@ -5,7 +5,7 @@ jobs:
     - image: circleci/golang:1.12.3
     steps:
     - checkout
-    - run: CGO_ENABLED=0 go build -o vampadapter
+    - run: go test ./...
     - run: mkdir -p ./artifacts
     - run: cp ./version.txt ./artifacts/version.txt
     - persist_to_workspace:

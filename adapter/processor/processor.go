@@ -88,16 +88,12 @@ func ProcessInstance(
 				if userCookie, cookieErr := request.Cookie(userCookieName); cookieErr == nil {
 					userID := userCookie.Value
 					CreateEntrySafe(experimentLogger, experimentName, subsetName, userID)
-					// logging.Info("SubsetName: %v userID: %v\n", subsetName, userID)
 					targetRegex, targetRegexError := GetRegexForStartsWithPath(targetPath)
 					if targetRegexError != nil {
 						logging.Info("Target Regex Error: %v\n", targetRegexError)
 					}
 					if targetRegex.MatchString(logInstance.URL) {
-						logging.Info("Target match: target: %v url: %v, userID: %v\n", targetPath, logInstance.URL, userID)
 						experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
-					} else {
-						logging.Info("Target doesn't match: target: %v url: %v\n", targetPath, logInstance.URL)
 					}
 				} else {
 					logging.Error("cookieErr: %v\n", cookieErr)
@@ -131,6 +127,9 @@ func CreateEntrySafe(experimentLogger *models.ExperimentLoggers, experimentName,
 			models.SubsetLogs{
 				UserLogs: map[string]int{userID: 0},
 			}
+	}
+	if _, ok := experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]; !ok {
+		experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID] = 0
 	}
 }
 
