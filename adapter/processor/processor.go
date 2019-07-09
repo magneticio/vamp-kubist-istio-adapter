@@ -196,8 +196,7 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error
 				StandardDeviation: 0,
 			}
 			var average float64 = 0
-			for userID, count := range experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
-				logging.Info("UserID: %v, count: %v\n", userID, count)
+			for _, count := range experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
 				average += float64(count) / n
 			}
 			experimentStatsGroup.ExperimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
