@@ -88,7 +88,7 @@ func ProcessInstance(
 				if userCookie, cookieErr := request.Cookie(userCookieName); cookieErr == nil {
 					userID := userCookie.Value
 					CreateEntrySafe(experimentLogger, experimentName, subsetName, userID)
-					logging.Info("SubsetName: %v userID: %v\n", subsetName, userID)
+					// logging.Info("SubsetName: %v userID: %v\n", subsetName, userID)
 					targetRegex, _ := regexp.Compile(targetPath)
 					if targetRegex.MatchString(logInstance.URL) {
 						experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
@@ -164,18 +164,21 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error
 	experimentConfigurations := configurator.GetExperimentConfigurations()
 	for experimentName, experimentConf := range experimentConfigurations.ExperimentConfigurationMap {
 		if _, ok := experimentLoggers.ExperimentLogs[experimentName]; !ok {
+			logging.Info("Experiment doesn't exist %v\n", experimentName)
 			continue
+		}
+		experimentStatsGroup.ExperimentStatsMap[experimentName] = models.ExperimentStats{
+			Subsets: make(map[string]models.SubsetStats),
 		}
 		for subsetName := range experimentConf.Subsets {
 			if _, ok2 := experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName]; !ok2 {
+				logging.Info("SubsetName doesn't exist %v\n", subsetName)
 				continue
 			}
 			n := float64(len(experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs))
 			if n == 0 {
+				logging.Info("No data for SubsetName: %v\n", subsetName)
 				continue
-			}
-			experimentStatsGroup.ExperimentStatsMap[experimentName] = models.ExperimentStats{
-				Subsets: make(map[string]models.SubsetStats),
 			}
 			experimentStatsGroup.ExperimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
 				NumberOfElements:  n,
@@ -183,7 +186,8 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error
 				StandardDeviation: 0,
 			}
 			var average float64 = 0
-			for _, count := range experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
+			for userID, count := range experimentLoggers.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs {
+				logging.Info("UserID: %v, count: %v\n", userID, count)
 				average += float64(count) / n
 			}
 			experimentStatsGroup.ExperimentStatsMap[experimentName].Subsets[subsetName] = models.SubsetStats{
@@ -192,6 +196,7 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error
 				StandardDeviation: 0,
 			}
 			if n < 1 {
+				logging.Info("Not enough data for calculation of standard deviation n=%v\n", n)
 				continue
 			}
 			var differentiationSum float64 = 0
