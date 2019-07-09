@@ -50,7 +50,7 @@ go run main.go
 
 You should see the logs appearing on your main process output.
 
-List of environment variables:
+## List of environment variables:
 
 VAMP_URL : url of the vamp deployment
 
