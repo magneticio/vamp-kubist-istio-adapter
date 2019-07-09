@@ -77,17 +77,18 @@ func ProcessInstance(
 	request := http.Request{
 		Header: header,
 	}
+	experimentLogger := GetExperimentLoggers()
 	for _, cookie := range request.Cookies() {
 		if experimentConf, ok := experimentConfigurations.ExperimentConfigurationMap[cookie.Name]; ok {
-			logging.Info("Cookie: %v\n", cookie.Value)
+			// logging.Info("Cookie: %v\n", cookie.Value)
 			experimentName := cookie.Name
 			if targetPath, ok2 := experimentConf.Subsets[cookie.Value]; ok2 {
 				subsetName := cookie.Value
 				userCookieName := experimentName + "_user"
 				if userCookie, cookieErr := request.Cookie(userCookieName); cookieErr == nil {
 					userID := userCookie.Value
-					experimentLogger := GetExperimentLoggers()
 					CreateEntrySafe(experimentLogger, experimentName, subsetName, userID)
+					logging.Info("SubsetName: %v userID: %v\n", subsetName, userID)
 					targetRegex, _ := regexp.Compile(targetPath)
 					if targetRegex.MatchString(logInstance.URL) {
 						experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
