@@ -77,7 +77,6 @@ func ProcessInstance(
 	request := http.Request{
 		Header: header,
 	}
-	logging.Info("Processing Cookies\n")
 	for _, cookie := range request.Cookies() {
 		if experimentConf, ok := experimentConfigurations.ExperimentConfigurationMap[cookie.Name]; ok {
 			logging.Info("Cookie: %v\n", cookie.Value)
