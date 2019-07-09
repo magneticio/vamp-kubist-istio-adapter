@@ -15,6 +15,14 @@ func generateCookie(experimentName, userID, subsetName string) string {
 	return experimentName + "_user=" + userID + ";" + experimentName + "=" + subsetName + ";" + cookieExtra
 }
 
+func TestProcessRegex(t *testing.T) {
+	targetPath := "/cart?variant_id=1"
+	regex, err := processor.GetRegexForStartsWithPath(targetPath)
+	assert.Equal(t, nil, err)
+	check1 := regex.MatchString(targetPath)
+	assert.Equal(t, true, check1)
+}
+
 func TestProcessIntance1(t *testing.T) {
 	experimentName := "ex-1"
 	subset1Name := "dest-1-9191-subset1"

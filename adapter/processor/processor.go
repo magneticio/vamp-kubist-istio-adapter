@@ -89,7 +89,7 @@ func ProcessInstance(
 					userID := userCookie.Value
 					CreateEntrySafe(experimentLogger, experimentName, subsetName, userID)
 					// logging.Info("SubsetName: %v userID: %v\n", subsetName, userID)
-					targetRegex, targetRegexError := regexp.Compile(targetPath)
+					targetRegex, targetRegexError := GetRegexForStartsWithPath(targetPath)
 					if targetRegexError != nil {
 						logging.Info("Target Regex Error: %v\n", targetRegexError)
 					}
@@ -106,6 +106,11 @@ func ProcessInstance(
 			break
 		}
 	}
+}
+
+func GetRegexForStartsWithPath(targetPath string) (*regexp.Regexp, error) {
+	regexString := "^" + regexp.QuoteMeta(targetPath)
+	return regexp.Compile(regexString)
 }
 
 func CreateEntrySafe(experimentLogger *models.ExperimentLoggers, experimentName, subsetName, userID string) {
