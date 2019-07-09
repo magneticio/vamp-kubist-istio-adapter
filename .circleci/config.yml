@@ -6,6 +6,7 @@ jobs:
     steps:
     - checkout
     - run: CGO_ENABLED=0 go build -o vampadapter
+    - run: mkdir -p ./artifacts
     - run: cp ./version.txt ./artifacts/version.txt
     - persist_to_workspace:
             root: ./artifacts
