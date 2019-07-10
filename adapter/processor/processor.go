@@ -25,7 +25,7 @@ var SendExperimentLoggers = true
 
 var activeLoggerID int32
 
-const RefreshPeriod = 10 * time.Second
+const RefreshPeriod = 60 * time.Second
 
 /*
 Example of a real log instance:
