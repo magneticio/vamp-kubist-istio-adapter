@@ -25,7 +25,9 @@ var URL string
 var Token string
 var APIVersion string
 var Cert string
-var TokenStore client.TokenStore
+
+// TokenStore is initiliazed once and shared with all clients
+var TokenStore client.TokenStore = &client.InMemoryTokenStore{}
 var Project string
 var Cluster string
 var VirtualCluster string
@@ -46,7 +48,7 @@ func getRestClient() (*client.RestClient, error) {
 	Token = viper.GetString("token")
 	APIVersion = viper.GetString("apiversion")
 	Cert = viper.GetString("cert")
-	TokenStore = &client.InMemoryTokenStore{}
+
 	restClient := client.NewRestClient(URL, Token, APIVersion, false, Cert, &TokenStore)
 	if restClient == nil {
 		return nil, errors.New("Rest Client can not be initiliazed")
