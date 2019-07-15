@@ -80,7 +80,7 @@ func ProcessInstance(
 	experimentLogger := GetExperimentLoggers()
 	for _, cookie := range request.Cookies() {
 		if experimentConf, ok := experimentConfigurations.ExperimentConfigurationMap[cookie.Name]; ok {
-			// logging.Info("Cookie: %v\n", cookie.Value)
+			logging.Info("Cookie: %v\n", cookie.Value)
 			experimentName := cookie.Name
 			if targetPath, ok2 := experimentConf.Subsets[cookie.Value]; ok2 {
 				subsetName := cookie.Value

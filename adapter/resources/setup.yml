@@ -26,7 +26,7 @@ spec:
 apiVersion: "config.istio.io/v1alpha2"
 kind: handler
 metadata:
-  name: vampadapterhandler
+  name: vampadapterhandler-TARGET_NAMESPACE
   namespace: istio-system
 spec:
   adapter: vampadapter.istio-system
@@ -65,7 +65,7 @@ metadata:
 spec:
   match: match(destination.namespace, "TARGET_NAMESPACE")
   actions:
-  - handler: vampadapterhandler.istio-system
+  - handler: vampadapterhandler-TARGET_NAMESPACE.istio-system
     instances:
     - vamplog
 ---
@@ -76,7 +76,7 @@ metadata:
   name: vampadapter-TARGET_NAMESPACE
   namespace: istio-system
   labels:
-    app: vampadapter
+    app: vampadapter-TARGET_NAMESPACE
 spec:
   type: ClusterIP
   ports:
