@@ -8,6 +8,7 @@ type LogInstance struct {
 	Latency            string
 	DestinationPort    string
 	DestinationVersion string
+	DestinationLabels  map[string]string
 }
 
 type SubsetStats struct {

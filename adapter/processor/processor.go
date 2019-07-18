@@ -73,9 +73,10 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	destination := logInstance.Destination
 	port := logInstance.DestinationPort
 	version := logInstance.DestinationVersion
+	labels := logInstance.DestinationLabels
 
 	latency := logInstance.Latency
-	logging.Info("destination: %v port: %v version: %v latency: %v\n", destination, port, version, latency)
+	logging.Info("destination: %v port: %v version: %v latency: %v labels: %v\n", destination, port, version, latency, labels)
 	// metricLogger := GetMetricLoggers()
 	// key := fmt.Sprintf("%v-%v-%v", destination, port, version)
 	// metricLogger.Log("latency", key, latency)

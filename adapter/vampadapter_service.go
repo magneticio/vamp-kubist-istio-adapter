@@ -31,6 +31,7 @@ import (
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/config"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/processor"
+	"github.com/spf13/cast"
 	"istio.io/api/mixer/adapter/model/v1beta1"
 	policy "istio.io/api/policy/v1beta1"
 	"istio.io/istio/mixer/template/logentry"
@@ -116,6 +117,8 @@ func decodeValue(in interface{}) interface{} {
 		return str
 	case *policy.Value_DurationValue:
 		return t.DurationValue.Value.String()
+	case *policy.Value_StringMapValue:
+		return t.StringMapValue.Value
 	default:
 		return fmt.Sprintf("%v", in)
 	}
@@ -130,6 +133,7 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 	var Latency string
 	var DestinationPort string
 	var DestinationVersion string
+	var DestinationLabels map[string]string
 	for _, inst := range in {
 		// timeStamp := inst.Timestamp.Value.String()
 		// severity := inst.Severity
@@ -151,6 +155,10 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 				DestinationPort = fmt.Sprintf("%v", decodeValue(v.GetValue()))
 			} else if k == "destinationVersion" {
 				DestinationVersion = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+			} else if k == "destinationLabels" {
+				if destinationLabelsTemp, err := cast.ToStringMapStringE(decodeValue(v.GetValue())); err != nil {
+					DestinationLabels = destinationLabelsTemp
+				}
 			}
 
 		}
@@ -162,6 +170,7 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 			Latency:            Latency,
 			DestinationPort:    DestinationPort,
 			DestinationVersion: DestinationVersion,
+			DestinationLabels:  DestinationLabels,
 		}
 		processor.LogInstanceChannel <- logInstance
 		// fmt.Printf("logInstance: %v\n", logInstance)
