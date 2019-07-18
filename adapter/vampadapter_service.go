@@ -90,32 +90,6 @@ func (s *VampAdapter) HandleLogEntry(ctx context.Context, r *logentry.HandleLogE
 
 	s.instances(r.Instances)
 
-	/*
-		  // this is not needed for this adapter
-		  b.WriteString(fmt.Sprintf("HandleMetric invoked with:\n  Adapter config: %s\n  Instances: %s\n",
-				cfg.String(), s.instances(r.Instances)))
-
-			if cfg.FilePath == "" {
-				fmt.Println(b.String())
-			} else {
-				_, err := os.OpenFile("out.txt", os.O_RDONLY|os.O_CREATE, 0666)
-				if err != nil {
-					fmt.Printf("error creating file: %v", err)
-				}
-				f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY, 0600)
-				if err != nil {
-					fmt.Printf("error opening file for append: %v", err)
-				}
-
-				defer f.Close()
-
-				fmt.Printf("writing instances to file %s", f.Name())
-				if _, err = f.Write(b.Bytes()); err != nil {
-					fmt.Printf("error writing to file: %v", err)
-				}
-			}
-	*/
-
 	return nil, nil
 }
 
@@ -152,6 +126,10 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 	var URL string
 	var Cookie string
 	var Destination string
+	var ResponseCode string
+	var Latency string
+	var DestinationPort string
+	var DestinationVersion string
 	for _, inst := range in {
 		// timeStamp := inst.Timestamp.Value.String()
 		// severity := inst.Severity
@@ -165,13 +143,25 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 				URL = fmt.Sprintf("%v", decodeValue(v.GetValue()))
 			} else if k == "destination" {
 				Destination = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+			} else if k == "responseCode" {
+				ResponseCode = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+			} else if k == "latency" {
+				Latency = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+			} else if k == "destinationPort" {
+				DestinationPort = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+			} else if k == "destinationVersion" {
+				DestinationVersion = fmt.Sprintf("%v", decodeValue(v.GetValue()))
 			}
 
 		}
 		logInstance := &models.LogInstance{
-			Destination: Destination,
-			URL:         URL,
-			Cookie:      Cookie,
+			Destination:        Destination,
+			URL:                URL,
+			Cookie:             Cookie,
+			ResponseCode:       ResponseCode,
+			Latency:            Latency,
+			DestinationPort:    DestinationPort,
+			DestinationVersion: DestinationVersion,
 		}
 		processor.LogInstanceChannel <- logInstance
 		// fmt.Printf("logInstance: %v\n", logInstance)

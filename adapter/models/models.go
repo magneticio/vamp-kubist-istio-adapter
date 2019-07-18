@@ -1,9 +1,13 @@
 package models
 
 type LogInstance struct {
-	Destination string
-	URL         string
-	Cookie      string
+	Destination        string
+	URL                string
+	Cookie             string
+	ResponseCode       string
+	Latency            string
+	DestinationPort    string
+	DestinationVersion string
 }
 
 type SubsetStats struct {
