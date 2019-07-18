@@ -54,7 +54,7 @@ func TestProcessIntance1(t *testing.T) {
 	}
 
 	experimentConfigurations := configurator.GetExperimentConfigurations()
-	processor.ProcessInstance(experimentConfigurations, logInstance1)
+	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance1)
 
 	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
@@ -63,7 +63,7 @@ func TestProcessIntance1(t *testing.T) {
 		URL:         targetPath,
 		Cookie:      generateCookie(experimentName, user2ID, subset1Name),
 	}
-	processor.ProcessInstance(experimentConfigurations, logInstance2)
+	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance2)
 
 	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
@@ -73,7 +73,7 @@ func TestProcessIntance1(t *testing.T) {
 		Cookie:      generateCookie(experimentName, user3ID, subset2Name),
 	}
 
-	processor.ProcessInstance(experimentConfigurations, logInstance3)
+	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance3)
 	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset2Name].UserLogs[user3ID])
 
 	logInstance4 := &models.LogInstance{
@@ -82,7 +82,7 @@ func TestProcessIntance1(t *testing.T) {
 		Cookie:      generateCookie(experimentName, user1ID, subset1Name),
 	}
 
-	processor.ProcessInstance(experimentConfigurations, logInstance4)
+	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance4)
 	assert.Equal(t, 2, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
 	time.Sleep(70 * time.Second)

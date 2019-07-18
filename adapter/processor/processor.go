@@ -64,11 +64,28 @@ func RunProcessor() {
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel
-		ProcessInstance(configurator.GetExperimentConfigurations(), logInstance)
+		ProcessInstanceForMetrics(logInstance)
+		ProcessInstanceForExperiments(configurator.GetExperimentConfigurations(), logInstance)
 	}
 }
 
-func ProcessInstance(
+func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
+	destination := logInstance.Destination
+	port := logInstance.DestinationPort
+	version := logInstance.DestinationVersion
+
+	latency := logInstance.Latency
+	logging.Info("destination: %v port: %v version: %v latency: %v\n", destination, port, version, latency)
+	// metricLogger := GetMetricLoggers()
+	// key := fmt.Sprintf("%v-%v-%v", destination, port, version)
+	// metricLogger.Log("latency", key, latency)
+}
+
+func GetMetricLoggers() error {
+	return nil
+}
+
+func ProcessInstanceForExperiments(
 	experimentConfigurations *models.ExperimentConfigurations,
 	logInstance *models.LogInstance) {
 
