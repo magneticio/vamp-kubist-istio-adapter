@@ -31,6 +31,7 @@ import (
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/config"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/processor"
+	"github.com/magneticio/vampkubistcli/logging"
 	"github.com/spf13/cast"
 	"istio.io/api/mixer/adapter/model/v1beta1"
 	policy "istio.io/api/policy/v1beta1"
@@ -158,6 +159,8 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 			} else if k == "destinationLabels" {
 				if destinationLabelsTemp, err := cast.ToStringMapStringE(decodeValue(v.GetValue())); err != nil {
 					DestinationLabels = destinationLabelsTemp
+				} else {
+					logging.Error("Cast Error: %v\n", err)
 				}
 			}
 
