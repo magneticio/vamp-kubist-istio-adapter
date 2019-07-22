@@ -57,7 +57,6 @@ spec:
       url: request.path | ""
       cookies: request.headers["cookie"] | ""
       destinationVersion: destination.labels["version"] | "unknown"
-      destinationLabels: destination.labels | emptyStringMap()
 ---
 # rule to dispatch to handler VampAdapter
 apiVersion: "config.istio.io/v1alpha2"
