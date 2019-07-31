@@ -6,7 +6,8 @@ require (
 	github.com/go-delve/delve v1.2.0
 	github.com/gogo/protobuf v1.2.1
 	github.com/imdario/mergo v0.3.7
-	github.com/magneticio/vampkubistcli v0.0.42
+	github.com/magneticio/vampkubistcli v0.0.44
+	github.com/mxschmitt/golang-combinations v1.0.0 // indirect
 	github.com/spf13/cast v1.3.0
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
