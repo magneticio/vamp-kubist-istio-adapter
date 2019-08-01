@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -31,8 +32,6 @@ import (
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/config"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/processor"
-	"github.com/magneticio/vampkubistcli/logging"
-	"github.com/spf13/cast"
 	"istio.io/api/mixer/adapter/model/v1beta1"
 	policy "istio.io/api/policy/v1beta1"
 	"istio.io/istio/mixer/template/logentry"
@@ -134,7 +133,7 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 	var Latency string
 	var DestinationPort string
 	var DestinationVersion string
-	var DestinationLabels map[string]string
+	DestinationLabels := make(map[string]string, 0)
 	for _, inst := range in {
 		// timeStamp := inst.Timestamp.Value.String()
 		// severity := inst.Severity
@@ -156,13 +155,22 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 				DestinationPort = fmt.Sprintf("%v", decodeValue(v.GetValue()))
 			} else if k == "destinationVersion" {
 				DestinationVersion = fmt.Sprintf("%v", decodeValue(v.GetValue()))
-			} else if k == "destinationLabels" {
-				if destinationLabelsTemp, err := cast.ToStringMapStringE(decodeValue(v.GetValue())); err != nil {
-					DestinationLabels = destinationLabelsTemp
-				} else {
-					logging.Error("Cast Error: %v\n", err)
+			} else if strings.HasPrefix(k, "label_") {
+				labelName := TrimPrefix(k, "label_")
+				labelValue := fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				if labelValue != "" {
+					DestinationLabels[labelName] = labelValue
 				}
 			}
+			/*
+				TODO: enable this when StringMap type bug fix is merged to istio
+				else if k == "destinationLabels" {
+					if destinationLabelsTemp, err := cast.ToStringMapStringE(decodeValue(v.GetValue())); err != nil {
+						DestinationLabels = destinationLabelsTemp
+					} else {
+						logging.Error("Cast Error: %v\n", err)
+					}
+				} */
 
 		}
 		logInstance := &models.LogInstance{
