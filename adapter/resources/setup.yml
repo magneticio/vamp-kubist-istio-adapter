@@ -39,7 +39,7 @@ spec:
 apiVersion: "config.istio.io/v1alpha2"
 kind: instance
 metadata:
-  name: vamplog
+  name: vamplog-TARGET_NAMESPACE
   namespace: istio-system
 spec:
   template: logentry
