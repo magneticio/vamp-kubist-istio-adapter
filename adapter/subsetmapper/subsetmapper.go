@@ -6,11 +6,13 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+	"fmt"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
 	"github.com/magneticio/vampkubistcli/logging"
 	clientmodels "github.com/magneticio/vampkubistcli/models"
 	combinations "github.com/mxschmitt/golang-combinations"
+	"github.com/mhausenblas/kubecuddler"
 )
 
 var DestinationsSubsetMap0 clientmodels.DestinationsSubsetsMap
@@ -30,7 +32,7 @@ func GetDestinationsSubsetsMap() *clientmodels.DestinationsSubsetsMap {
 
 // RefreshDestinationsSubsetsMap updates the subset map
 func RefreshDestinationsSubsetsMap() error {
-	logging.Info("Refresh Experiment Configurations at: %v\n", time.Now())
+	logging.Info("Refresh RefreshDestinationsSubsetsMap at: %v\n", time.Now())
 	restClient, restCLientError := vampclientprovider.GetRestClient()
 	if restCLientError != nil {
 		return errors.New("Rest Client can not be initiliazed")
@@ -46,6 +48,7 @@ func RefreshDestinationsSubsetsMap() error {
 		}
 		DestinationsSubsetMap1 = *destinationsSubsetsMap
 		atomic.StoreInt32(&activeID, 1)
+		go ApplyLabelsToInstance(DestinationsSubsetMap1.Labels, vampclientprovider.VirtualCluster)
 		return nil
 	} else {
 		destinationsSubsetsMap, err := restClient.GetSubsetMap(values)
@@ -54,6 +57,7 @@ func RefreshDestinationsSubsetsMap() error {
 		}
 		DestinationsSubsetMap0 = *destinationsSubsetsMap
 		atomic.StoreInt32(&activeID, 0)
+		go ApplyLabelsToInstance(DestinationsSubsetMap1.Labels, vampclientprovider.VirtualCluster)
 		return nil
 	}
 }
@@ -101,4 +105,98 @@ func GetSubsetByLabels(destination string, labels map[string]string) []string {
 		subsetList = append(subsetList, subset)
 	}
 	return subsetList
+}
+
+
+/*
+# example instance for template logentry
+apiVersion: "config.istio.io/v1alpha2"
+kind: instance
+metadata:
+  name: vamplog
+  namespace: istio-system
+spec:
+  template: logentry
+  params:
+    severity: '"info"'
+    timestamp: request.time
+    variables:
+      source: source.labels["app"] | source.workload.name | "unknown"
+      user: source.user | "unknown"
+      destination: destination.labels["app"] | destination.name | destination.service.name | "unknown"
+      destinationPort: destination.port | 0
+      responseCode: response.code | 0
+      responseSize: response.size | 0
+      latency: response.duration | "0ms"
+      url: request.path | ""
+      cookies: request.headers["cookie"] | ""
+	  destinationVersion: destination.labels["version"] | "unknown"
+
+*/
+
+// GenerateInstanceWithLogEntryTemplate generate instance template with given labels and namespace
+func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *models.Instance {
+	variables := map[string]string {
+		"source": "source.labels[\"app\"] | source.workload.name | \"unknown\"",
+		"user": "source.user | \"unknown\"",
+		"destination": "destination.labels[\"app\"] | destination.name | destination.service.name | \"unknown\"",
+		"destinationPort": "destination.port | 0",
+		"responseCode": "response.code | 0",
+		"responseSize": "response.size | 0",
+		"latency": "response.duration | \"0ms\"",
+		"url": "request.path | \"\"",
+		"cookies": "request.headers[\"cookie\"] | \"\"",
+		"destinationVersion": "destination.labels[\"version\"] | \"unknown\"",
+	}
+
+	labelPrefix := "label"
+	for _, label := range labels {
+		key := fmt.Sprintf("%s_%s", labelPrefix, label)
+		variables[key] = fmt.Sprintf("destination.labels[\"%s\"] | \"unknown\"", label)
+	}
+
+	params := models.InstanceParams{
+		Severity: "'\"info\"'",
+		Timestamp: "request.time",
+		Variables: variables,
+	}
+
+	spec := model.InstanceSpec{
+		Template: "logentry",
+		Params: params,
+	}
+
+	instance := &model.Instance{
+		APIVersion: "config.istio.io/v1alpha2",
+		Kind: "instance"
+		Metadata: map[string]string {
+			"name": fmt.Sprintf("%s-%s", vamplog, namespace),
+			"namespace": "istio-system",
+		}
+		Spec: spec,
+	}
+
+	return &instance
+}
+
+func ApplyLabelsToInstance(labels []string, namespace string) error {
+	instance := GenerateInstanceWithLogEntryTemplate(labels, namespace)
+	instanceBytes, marshalError := yaml.Marshal(instance)
+	if marshalError != nil {
+		return marshalError
+	}
+	writeError := ioutil.WriteFile("/tmp/instance.yaml", instanceBytes, 0644)
+	if writeError != nil {
+		return writeError
+	}
+
+	res, kubeErr := kubecuddler.Kubectl(true, true, "apply", "-f", "/tmp/instance.yaml")
+
+	if kubeErr != nil {
+		return kubeErr
+	}
+
+	logging.Info(res)
+
+	return nil
 }

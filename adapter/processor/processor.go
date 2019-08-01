@@ -10,6 +10,7 @@ import (
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/subsetmapper"
 	"github.com/magneticio/vampkubistcli/logging"
 )
 
@@ -61,6 +62,7 @@ func SetupProcessor() {
 
 func RunProcessor() {
 	configurator.SetupConfigurator()
+	subsetmapper.Setup()
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel
@@ -77,6 +79,8 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 
 	latency := logInstance.Latency
 	logging.Info("destination: %v port: %v version: %v latency: %v labels: %v\n", destination, port, version, latency, labels)
+	subsets := subsetmapper.GetSubsetByLabels(destination, labels)
+	logging.Info("subsets: %v\n", subsets)
 	// metricLogger := GetMetricLoggers()
 	// key := fmt.Sprintf("%v-%v-%v", destination, port, version)
 	// metricLogger.Log("latency", key, latency)

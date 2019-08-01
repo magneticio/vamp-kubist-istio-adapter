@@ -69,7 +69,7 @@ spec:
   actions:
   - handler: vampadapterhandler-TARGET_NAMESPACE.istio-system
     instances:
-    - vamplog
+    - vamplog-TARGET_NAMESPACE
 ---
 # VampAdapter Service
 apiVersion: v1

@@ -60,4 +60,23 @@ type ExperimentSpecification struct {
 type Experiment struct {
 	Name          string                  `yaml:"name,omitempty" json:"name,omitempty"`
 	Specification ExperimentSpecification `yaml:"specification,omitempty" json:"specification,omitempty"`
+}	  
+	  
+type Instance struct {
+	APIVersion string `yaml:"apiVersion,omitempty" json:"apiVersion,omitempty"`
+	Kind string `yaml:"kind,omitempty" json:"kind,omitempty"`
+	Metadata map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+	Spec InstanceSpec `yaml:"apiVersion,omitempty" json:"apiVersion,omitempty"`
+}
+
+type InstanceSpec {
+	Template string `yaml:"template,omitempty" json:"template,omitempty"`
+	CompiledTemplate string `yaml:"compiledTemplate,omitempty" json:"compiledTemplate,omitempty"`
+	Params InstanceParams `yaml:"params,omitempty" json:"params,omitempty"`
+}
+
+type InstanceParams {
+	Severity string `yaml:"severity,omitempty" json:"severity,omitempty"`
+	Timestamp string `yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Variables map[string]string `yaml:"variables,omitempty" json:"variables,omitempty"`
 }
