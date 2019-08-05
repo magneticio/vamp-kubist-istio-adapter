@@ -1,6 +1,8 @@
 package models
 
+/*
 type LogInstance struct {
+	Timestamp int64
 	Destination        string
 	URL                string
 	Cookie             string
@@ -9,6 +11,34 @@ type LogInstance struct {
 	DestinationPort    string
 	DestinationVersion string
 	DestinationLabels  map[string]string
+}
+*/
+
+type LogInstance struct {
+	Timestamp int64
+	Destination        string
+	DestinationPort    string
+	DestinationLabels  map[string]string
+	Labels map[string]string
+	Values map[string]interface{}
+}
+
+func ConvertToFloat64(i interface{}) float64 {
+	switch v := i.(type) {
+	case int:
+		return float64(i)
+	case string:
+		if s, err := strconv.ParseFloat(i, 64); err == nil {
+			return s
+		} else {
+			fmt.Printf("Float parsing failed %v!\n", i)
+		}
+	case time.Duration:
+		latency = float64(latencyComplex.Nanoseconds()) / float64(1e6) // convert to milliseconds		
+	default:
+		fmt.Printf("unknown type type %T!\n", v)
+	}
+	return 0
 }
 
 type SubsetStats struct {

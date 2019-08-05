@@ -78,7 +78,7 @@ func Setup() {
 }
 
 // GetSubsetByLabels return all possible subsets for given labels
-func GetSubsetByLabels(destination string, labels map[string]string) []string {
+func GetSubsetByLabels(destination string, labels map[string]string) []clientmodels.SubsetToPorts {
 	destinationsSubsetsMap := GetDestinationsSubsetsMap()
 	keys := make([]string, 0, len(labels))
 	for key := range labels {
@@ -101,8 +101,8 @@ func GetSubsetByLabels(destination string, labels map[string]string) []string {
 			}
 		}
 		labelsMapString := sb.String()
-		subset := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString].Subset
-		subsetList = append(subsetList, subset)
+		subsetWithPorts := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString]
+		subsetList = append(subsetList, subsetWithPorts)
 	}
 	return subsetList
 }

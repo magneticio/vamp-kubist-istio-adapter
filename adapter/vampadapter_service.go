@@ -135,7 +135,10 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 	var DestinationVersion string
 	DestinationLabels := make(map[string]string, 0)
 	for _, inst := range in {
-		// timeStamp := inst.Timestamp.Value.String()
+		logInstance := &models.LogInstance{
+			Timestamp: inst.Timestamp.Value.Seconds,
+			Values:    make(map[string]interface{}, 1),
+		}
 		// severity := inst.Severity
 		// fmt.Println("TimeStamp: ", timeStamp)
 		// fmt.Println("Severity: ", severity)
@@ -156,7 +159,7 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 			} else if k == "destinationVersion" {
 				DestinationVersion = fmt.Sprintf("%v", decodeValue(v.GetValue()))
 			} else if strings.HasPrefix(k, "label_") {
-				labelName := TrimPrefix(k, "label_")
+				labelName := strings.TrimPrefix(k, "label_")
 				labelValue := fmt.Sprintf("%v", decodeValue(v.GetValue()))
 				if labelValue != "" {
 					DestinationLabels[labelName] = labelValue
@@ -173,16 +176,19 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 				} */
 
 		}
-		logInstance := &models.LogInstance{
-			Destination:        Destination,
-			URL:                URL,
-			Cookie:             Cookie,
-			ResponseCode:       ResponseCode,
-			Latency:            Latency,
-			DestinationPort:    DestinationPort,
-			DestinationVersion: DestinationVersion,
-			DestinationLabels:  DestinationLabels,
-		}
+		/*
+			logInstance := &models.LogInstance{
+				Timestamp:          timestamp,
+				Destination:        Destination,
+				URL:                URL,
+				Cookie:             Cookie,
+				ResponseCode:       ResponseCode,
+				Latency:            Latency,
+				DestinationPort:    DestinationPort,
+				DestinationVersion: DestinationVersion,
+				DestinationLabels:  DestinationLabels,
+			}
+		*/
 		processor.LogInstanceChannel <- logInstance
 		// fmt.Printf("logInstance: %v\n", logInstance)
 	}

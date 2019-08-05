@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/metriclogger"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/subsetmapper"
 	"github.com/magneticio/vampkubistcli/logging"
@@ -17,6 +18,8 @@ import (
 const bufferSize = 1000
 
 var LogInstanceChannel = make(chan *models.LogInstance, bufferSize)
+
+var latencyMetricLoggerGroup *metriclogger.MetricLoggerGroup = metriclogger.NewMetricLoggerGroup("latency")
 
 var ExperimentLoggers0 models.ExperimentLoggers
 var ExperimentLoggers1 models.ExperimentLoggers
@@ -71,19 +74,28 @@ func RunProcessor() {
 	}
 }
 
+// ProcessInstanceForMetrics processes a log instance for extracting metrics
 func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
+	timestamp := logInstance.Timestamp
 	destination := logInstance.Destination
 	port := logInstance.DestinationPort
-	version := logInstance.DestinationVersion
+	version := logInstance.DestinationVersion // This doesn't work but keep it for backwards compatibility
 	labels := logInstance.DestinationLabels
-
-	latency := logInstance.Latency
+	latency := 0.0
+	latencyComplex, latencyError := time.ParseDuration(logInstance.Latency)
+	if latencyError != nil {
+		latency = float64(latencyComplex.Nanoseconds()) / float64(1e6) // convert to milliseconds
+	}
 	logging.Info("destination: %v port: %v version: %v latency: %v labels: %v\n", destination, port, version, latency, labels)
 	subsets := subsetmapper.GetSubsetByLabels(destination, labels)
 	logging.Info("subsets: %v\n", subsets)
-	// metricLogger := GetMetricLoggers()
-	// key := fmt.Sprintf("%v-%v-%v", destination, port, version)
-	// metricLogger.Log("latency", key, latency)
+	for _, subsetWithPorts := range subsets {
+		for _, portWith := range subsetWithPorts.Ports {
+			if string(portWith) == port {
+				latencyMetricLoggerGroup.GetMetricLogger(destination, port, subsetWithPorts.Subset).Push(timestamp, latency)
+			}
+		}
+	}
 }
 
 func GetMetricLoggers() error {
