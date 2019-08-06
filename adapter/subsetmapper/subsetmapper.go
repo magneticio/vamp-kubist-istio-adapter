@@ -8,7 +8,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
-	"yaml"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
@@ -80,8 +81,13 @@ func Setup() {
 	}()
 }
 
+type SubsetInfo struct {
+	DestinationName string
+	SubsetWithPorts clientmodels.SubsetToPorts
+}
+
 // GetSubsetByLabels return all possible subsets for given labels
-func GetSubsetByLabels(destination string, labels map[string]string) []clientmodels.SubsetToPorts {
+func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInfo {
 	destinationsSubsetsMap := GetDestinationsSubsetsMap()
 	keys := make([]string, 0, len(labels))
 	for key := range labels {
@@ -89,7 +95,7 @@ func GetSubsetByLabels(destination string, labels map[string]string) []clientmod
 	}
 	labelCombinations := combinations.All(keys)
 
-	subsetList := make([]string, 0)
+	subsetList := make([]SubsetInfo, 0)
 
 	for _, combination := range labelCombinations {
 
@@ -104,8 +110,21 @@ func GetSubsetByLabels(destination string, labels map[string]string) []clientmod
 			}
 		}
 		labelsMapString := sb.String()
-		subsetWithPorts := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString]
-		subsetList = append(subsetList, subsetWithPorts)
+		if destination != "" {
+			subsetWithPorts := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString]
+			subsetList = append(subsetList, SubsetInfo{
+				DestinationName: destination,
+				SubsetWithPorts: subsetWithPorts,
+			})
+		} else {
+			for destinationName, destinationMap := range destinationsSubsetsMap.DestinationsMap {
+				subsetWithPorts := destinationMap.Map[labelsMapString]
+				subsetList = append(subsetList, SubsetInfo{
+					DestinationName: destinationName,
+					SubsetWithPorts: subsetWithPorts,
+				})
+			}
+		}
 	}
 	return subsetList
 }
@@ -172,13 +191,13 @@ func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *mo
 		APIVersion: "config.istio.io/v1alpha2",
 		Kind:       "instance",
 		Metadata: map[string]string{
-			"name":      fmt.Sprintf("%s-%s", vamplog, namespace),
+			"name":      fmt.Sprintf("%s-%s", "vamplog", namespace),
 			"namespace": "istio-system",
 		},
 		Spec: spec,
 	}
 
-	return &instance
+	return instance
 }
 
 func ApplyLabelsToInstance(labels []string, namespace string) error {

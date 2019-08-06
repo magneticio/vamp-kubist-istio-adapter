@@ -82,39 +82,69 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	destination := logInstance.Destination
 	port := logInstance.DestinationPort
 	labels := logInstance.DestinationLabels
-	if latency, ok := logInstance.Values["latency"]; ok {
-		value := ConvertToFloat64(latency)
-		logging.Info("destination: %v port: %v labels: %v\n", destination, port, labels)
-		subsets := subsetmapper.GetSubsetByLabels(destination, labels)
-		logging.Info("subsets: %v\n", subsets)
-		for _, subsetWithPorts := range subsets {
-			for _, portWith := range subsetWithPorts.Ports {
-				if string(portWith) == port {
-					latencyMetricLoggerGroup.GetMetricLogger(destination, port, subsetWithPorts.Subset).Push(timestamp, value)
+	subsets := subsetmapper.GetSubsetByLabels(destination, labels)
+
+	for metricName, metricValue := range logInstance.Values {
+		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
+			if metricInfo.Type == "categorical" {
+				groupName := fmt.Sprintf(metricInfo.NameFormat, metricValue)
+				if metricLoggerGroup, exitInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; exitInGroupMap {
+					for _, subsetInfo := range subsets {
+						for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
+							if port != "" {
+								if string(portWith) == port {
+									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, +1)
+								}
+							} else {
+								metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, +1)
+							}
+						}
+					}
+				}
+			} else {
+				if metricLoggerGroup, exitInGroupMap := metriclogger.MetricLoggerGroupMap[metricName]; exitInGroupMap {
+					value := ConvertToFloat64(metricValue)
+					for _, subsetInfo := range subsets {
+						for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
+							if port != "" {
+								if string(portWith) == port {
+									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, value)
+								}
+							} else {
+								metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, value)
+							}
+						}
+					}
 				}
 			}
 		}
 	}
 }
 
-func GetMetricLoggers() error {
-	return nil
-}
-
 func ProcessInstanceForExperiments(
 	experimentConfigurations *models.ExperimentConfigurations,
 	logInstance *models.LogInstance) {
-
+	URL := ""
+	if url, ok := logInstance.Values["url"]; ok {
+		if urlString, ok2 := url.(string); ok2 {
+			URL = urlString
+		} else {
+			logging.Error("URL conversion to string failed\n")
+			return // string conversion problem
+		}
+	}
 	header := http.Header{}
 	if cookies, ok := logInstance.Values["cookies"]; ok {
 		if cookiesString, ok2 := cookies.(string); ok2 {
 			header.Add("Cookie", cookiesString)
 		} else {
+			logging.Error("Cookie conversion to string failed\n")
 			return // string conversion problem
 		}
 	} else {
 		return // no cookie
 	}
+	// TODO: url can be added to request like cookies
 	request := http.Request{
 		Header: header,
 	}
@@ -133,7 +163,7 @@ func ProcessInstanceForExperiments(
 					if targetRegexError != nil {
 						logging.Info("Target Regex Error: %v\n", targetRegexError)
 					}
-					if targetRegex.MatchString(logInstance.URL) {
+					if targetRegex.MatchString(URL) {
 						experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
 					}
 				} else {

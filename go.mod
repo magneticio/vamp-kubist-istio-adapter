@@ -14,6 +14,7 @@ require (
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
 	google.golang.org/grpc v1.21.1
+	gopkg.in/yaml.v2 v2.2.2
 	istio.io/api v0.0.0-20190718164343-4f4db2d49c2c
 	istio.io/istio v0.0.0-20190718184030-70b10ae7ecb1
 )

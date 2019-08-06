@@ -11,6 +11,29 @@ import (
 
 const DefaultRefreshPeriod = 30 * time.Second
 
+var MetricDefinitons = map[string]MetricInfo {
+	"latency": MetricInfo{
+		Type: "value",
+		NameFormat: "latency",
+	},
+	"responceCode": MetricInfo{
+		Type: "categorical",
+		NameFormat: "response-%v",
+	},
+}
+
+var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
+	"latency": NewMetricLoggerGroup("latency"),
+	"response-200": NewMetricLoggerGroup("response-200"),
+	"response-500": NewMetricLoggerGroup("response-500"),
+}
+
+
+type MetricInfo struct {
+	Type string //todo enum
+	NameFormat string
+}
+
 type MetricLoggerGroup struct {
 	Name          string
 	RefreshPeriod time.Duration

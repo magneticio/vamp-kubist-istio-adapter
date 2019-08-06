@@ -26,7 +26,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"bytes"
 	"os"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/config"
@@ -125,12 +124,12 @@ func decodeValue(in interface{}) interface{} {
 }
 
 func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
-	
+
 	for _, inst := range in {
 		logInstance := &models.LogInstance{
-			Timestamp: inst.Timestamp.Value.Seconds,
+			Timestamp:         inst.Timestamp.Value.Seconds,
 			DestinationLabels: make(map[string]string, 0),
-			Values:    make(map[string]interface{}, 1),
+			Values:            make(map[string]interface{}, 1),
 		}
 		// severity := inst.Severity
 		// fmt.Println("TimeStamp: ", timeStamp)
