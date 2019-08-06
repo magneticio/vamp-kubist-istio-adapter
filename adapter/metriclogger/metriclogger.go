@@ -1,9 +1,9 @@
 package metriclogger
 
 import (
+	"fmt"
 	"sync/atomic"
 	"time"
-	"fmt"
 
 	"github.com/magneticio/vampkubistcli/logging"
 	"github.com/montanaflynn/stats"
@@ -92,7 +92,7 @@ func (m *MetricLogger) Push(timestamp int64, value float64) {
 }
 
 func (m *MetricLogger) RefreshMetricLogger() error {
-	logging.Info("Process and Clean Metriclogger Values for \n", m.Name)
+	logging.Info("Process and Clean Metriclogger Values for %v\n", m.Name)
 	if atomic.LoadInt32(&m.ActiveID) == 0 {
 		atomic.StoreInt32(&m.ActiveID, 1)
 		processError := m.ProcessMetricLogger(&m.Values0)
@@ -122,13 +122,13 @@ func (m *MetricLogger) ProcessMetricLogger(metricValues *MetricValues) error {
 	}
 	average, meanError := stats.Mean(metricValues.Values)
 	if meanError != nil {
-		logging.Error("Mean Error: ", meanError)
+		logging.Error("Mean Error: %v\n", meanError)
 	}
 	metricStats.Average = average
 
 	standardDeviation, standardDeviationError := stats.StandardDeviation(metricValues.Values)
 	if standardDeviationError != nil {
-		logging.Error("StandardDeviation Error: ", standardDeviationError)
+		logging.Error("StandardDeviation Error: %v\n", standardDeviationError)
 	}
 	metricStats.StandardDeviation = standardDeviation
 	logging.Info("Metrics should be sent now: %v\n", metricStats)

@@ -2,17 +2,20 @@ package subsetmapper
 
 import (
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"sort"
 	"strings"
 	"sync/atomic"
 	"time"
-	"fmt"
+	"yaml"
 
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
 	"github.com/magneticio/vampkubistcli/logging"
 	clientmodels "github.com/magneticio/vampkubistcli/models"
-	combinations "github.com/mxschmitt/golang-combinations"
 	"github.com/mhausenblas/kubecuddler"
+	combinations "github.com/mxschmitt/golang-combinations"
 )
 
 var DestinationsSubsetMap0 clientmodels.DestinationsSubsetsMap
@@ -107,7 +110,6 @@ func GetSubsetByLabels(destination string, labels map[string]string) []clientmod
 	return subsetList
 }
 
-
 /*
 # example instance for template logentry
 apiVersion: "config.istio.io/v1alpha2"
@@ -136,16 +138,16 @@ spec:
 
 // GenerateInstanceWithLogEntryTemplate generate instance template with given labels and namespace
 func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *models.Instance {
-	variables := map[string]string {
-		"source": "source.labels[\"app\"] | source.workload.name | \"unknown\"",
-		"user": "source.user | \"unknown\"",
-		"destination": "destination.labels[\"app\"] | destination.name | destination.service.name | \"unknown\"",
-		"destinationPort": "destination.port | 0",
-		"responseCode": "response.code | 0",
-		"responseSize": "response.size | 0",
-		"latency": "response.duration | \"0ms\"",
-		"url": "request.path | \"\"",
-		"cookies": "request.headers[\"cookie\"] | \"\"",
+	variables := map[string]string{
+		"source":             "source.labels[\"app\"] | source.workload.name | \"unknown\"",
+		"user":               "source.user | \"unknown\"",
+		"destination":        "destination.labels[\"app\"] | destination.name | destination.service.name | \"unknown\"",
+		"destinationPort":    "destination.port | 0",
+		"responseCode":       "response.code | 0",
+		"responseSize":       "response.size | 0",
+		"latency":            "response.duration | \"0ms\"",
+		"url":                "request.path | \"\"",
+		"cookies":            "request.headers[\"cookie\"] | \"\"",
 		"destinationVersion": "destination.labels[\"version\"] | \"unknown\"",
 	}
 
@@ -156,23 +158,23 @@ func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *mo
 	}
 
 	params := models.InstanceParams{
-		Severity: "'\"info\"'",
+		Severity:  "'\"info\"'",
 		Timestamp: "request.time",
 		Variables: variables,
 	}
 
-	spec := model.InstanceSpec{
+	spec := models.InstanceSpec{
 		Template: "logentry",
-		Params: params,
+		Params:   params,
 	}
 
-	instance := &model.Instance{
+	instance := &models.Instance{
 		APIVersion: "config.istio.io/v1alpha2",
-		Kind: "instance"
-		Metadata: map[string]string {
-			"name": fmt.Sprintf("%s-%s", vamplog, namespace),
+		Kind:       "instance",
+		Metadata: map[string]string{
+			"name":      fmt.Sprintf("%s-%s", vamplog, namespace),
 			"namespace": "istio-system",
-		}
+		},
 		Spec: spec,
 	}
 

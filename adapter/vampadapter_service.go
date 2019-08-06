@@ -124,19 +124,12 @@ func decodeValue(in interface{}) interface{} {
 	}
 }
 
-func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
-	var b bytes.Buffer
-	var URL string
-	var Cookie string
-	var Destination string
-	var ResponseCode string
-	var Latency string
-	var DestinationPort string
-	var DestinationVersion string
-	DestinationLabels := make(map[string]string, 0)
+func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
+	
 	for _, inst := range in {
 		logInstance := &models.LogInstance{
 			Timestamp: inst.Timestamp.Value.Seconds,
+			DestinationLabels: make(map[string]string, 0),
 			Values:    make(map[string]interface{}, 1),
 		}
 		// severity := inst.Severity
@@ -145,24 +138,22 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 		for k, v := range inst.Variables {
 			// fmt.Println(k, ": ", decodeValue(v.GetValue()))
 			if k == "cookies" {
-				Cookie = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetStringValue()
 			} else if k == "url" {
-				URL = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetStringValue()
 			} else if k == "destination" {
-				Destination = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetStringValue()
 			} else if k == "responseCode" {
-				ResponseCode = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetInt64Value()
 			} else if k == "latency" {
-				Latency = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetDurationValue()
 			} else if k == "destinationPort" {
-				DestinationPort = fmt.Sprintf("%v", decodeValue(v.GetValue()))
-			} else if k == "destinationVersion" {
-				DestinationVersion = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetInt64Value()
 			} else if strings.HasPrefix(k, "label_") {
 				labelName := strings.TrimPrefix(k, "label_")
-				labelValue := fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				labelValue := v.GetStringValue()
 				if labelValue != "" {
-					DestinationLabels[labelName] = labelValue
+					logInstance.DestinationLabels[labelName] = labelValue
 				}
 			}
 			/*
@@ -176,24 +167,12 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
 				} */
 
 		}
-		/*
-			logInstance := &models.LogInstance{
-				Timestamp:          timestamp,
-				Destination:        Destination,
-				URL:                URL,
-				Cookie:             Cookie,
-				ResponseCode:       ResponseCode,
-				Latency:            Latency,
-				DestinationPort:    DestinationPort,
-				DestinationVersion: DestinationVersion,
-				DestinationLabels:  DestinationLabels,
-			}
-		*/
+
 		processor.LogInstanceChannel <- logInstance
 		// fmt.Printf("logInstance: %v\n", logInstance)
 	}
 
-	return b.String()
+	return nil
 }
 
 // Addr returns the listening address of the server

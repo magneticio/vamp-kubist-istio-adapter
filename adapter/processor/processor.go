@@ -2,9 +2,11 @@ package processor
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
 	"regexp"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -79,20 +81,17 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	timestamp := logInstance.Timestamp
 	destination := logInstance.Destination
 	port := logInstance.DestinationPort
-	version := logInstance.DestinationVersion // This doesn't work but keep it for backwards compatibility
 	labels := logInstance.DestinationLabels
-	latency := 0.0
-	latencyComplex, latencyError := time.ParseDuration(logInstance.Latency)
-	if latencyError != nil {
-		latency = float64(latencyComplex.Nanoseconds()) / float64(1e6) // convert to milliseconds
-	}
-	logging.Info("destination: %v port: %v version: %v latency: %v labels: %v\n", destination, port, version, latency, labels)
-	subsets := subsetmapper.GetSubsetByLabels(destination, labels)
-	logging.Info("subsets: %v\n", subsets)
-	for _, subsetWithPorts := range subsets {
-		for _, portWith := range subsetWithPorts.Ports {
-			if string(portWith) == port {
-				latencyMetricLoggerGroup.GetMetricLogger(destination, port, subsetWithPorts.Subset).Push(timestamp, latency)
+	if latency, ok := logInstance.Values["latency"]; ok {
+		value := ConvertToFloat64(latency)
+		logging.Info("destination: %v port: %v labels: %v\n", destination, port, labels)
+		subsets := subsetmapper.GetSubsetByLabels(destination, labels)
+		logging.Info("subsets: %v\n", subsets)
+		for _, subsetWithPorts := range subsets {
+			for _, portWith := range subsetWithPorts.Ports {
+				if string(portWith) == port {
+					latencyMetricLoggerGroup.GetMetricLogger(destination, port, subsetWithPorts.Subset).Push(timestamp, value)
+				}
 			}
 		}
 	}
@@ -107,7 +106,15 @@ func ProcessInstanceForExperiments(
 	logInstance *models.LogInstance) {
 
 	header := http.Header{}
-	header.Add("Cookie", logInstance.Cookie)
+	if cookies, ok := logInstance.Values["cookies"]; ok {
+		if cookiesString, ok2 := cookies.(string); ok2 {
+			header.Add("Cookie", cookiesString)
+		} else {
+			return // string conversion problem
+		}
+	} else {
+		return // no cookie
+	}
 	request := http.Request{
 		Header: header,
 	}
@@ -277,4 +284,22 @@ func GetMergedExperimentLoggers() *models.ExperimentLoggers {
 		}
 	}
 	return &merged
+}
+
+func ConvertToFloat64(i interface{}) float64 {
+	switch v := i.(type) {
+	case int:
+		return float64(v)
+	case string:
+		if s, err := strconv.ParseFloat(v, 64); err == nil {
+			return s
+		} else {
+			fmt.Printf("Float parsing failed %v!\n", i)
+		}
+	case time.Duration:
+		return float64(v.Nanoseconds()) / float64(1e6) // convert to milliseconds
+	default:
+		fmt.Printf("unknown type type %T!\n", v)
+	}
+	return 0
 }
