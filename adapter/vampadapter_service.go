@@ -123,6 +123,7 @@ func decodeValue(in interface{}) interface{} {
 	}
 }
 
+// instances conver InstanceMsg to internal LogInstance type and send to processor queue
 func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
 
 	for _, inst := range in {
@@ -131,9 +132,8 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
 			DestinationLabels: make(map[string]string, 0),
 			Values:            make(map[string]interface{}, 1),
 		}
-		// severity := inst.Severity
-		// fmt.Println("TimeStamp: ", timeStamp)
-		// fmt.Println("Severity: ", severity)
+		// severity := inst.Severity // TODO: add check, we expect severity to be info
+		// TODO: we could do this without a loop
 		for k, v := range inst.Variables {
 			// fmt.Println(k, ": ", decodeValue(v.GetValue()))
 			if k == "cookies" {
