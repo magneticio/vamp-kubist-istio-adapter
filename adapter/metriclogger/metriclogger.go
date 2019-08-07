@@ -13,11 +13,11 @@ const DefaultRefreshPeriod = 30 * time.Second
 
 var MetricDefinitons = map[string]MetricInfo{
 	"latency": MetricInfo{
-		Type:       "value",
+		Type:       Valued,
 		NameFormat: "latency",
 	},
 	"responseCode": MetricInfo{
-		Type:       "categorical",
+		Type:       Categorical,
 		NameFormat: "response-%v",
 	},
 }
@@ -28,37 +28,49 @@ var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
 	"response-500": NewMetricLoggerGroup("response-500", "categorical"),
 }
 
+type MetricType int
+
+const (
+	Valued MetricType = iota
+	Categorical
+)
+
+func (d MetricType) String() string {
+	return [...]string{"Valued", "Categorical"}[d]
+}
+
 type MetricInfo struct {
-	Type       string //todo enum
+	Type       MetricType //todo enum
 	NameFormat string
 }
 
 type MetricLoggerGroup struct {
 	Name          string
-	MetricType    string
+	MetricType    MetricType
 	RefreshPeriod time.Duration
 	MetricLoggers map[string]*MetricLogger
 }
 
 type MetricLogger struct {
-	Name            string
-	MetricType      string
-	Destination     string
-	Port            string
-	Subset          string
-	Values0         MetricValues
-	Values1         MetricValues
-	ValueMapBucket0 map[int64]float64
-	ValueMapBucket1 map[int64]float64
-	ValueMapBucket2 map[int64]float64
-	ValueMaps       []map[int64]float64
-	ActiveID        int32
-	RefreshPeriod   time.Duration
+	Name          string
+	MetricType    MetricType
+	Destination   string
+	Port          string
+	Subset        string
+	ValueMaps     []map[int64][]float64
+	ActiveID      int32
+	RefreshPeriod time.Duration
+}
+
+type MetricValue struct {
+	Timestamp int64
+	Value     float64
 }
 
 type MetricValues struct {
 	StartTime int64
-	Values    map[int64]float64
+	EndTime   int64
+	Values    map[int64][]float64
 }
 
 type MetricStats struct {
@@ -67,7 +79,7 @@ type MetricStats struct {
 	StandardDeviation float64
 }
 
-func NewMetricLoggerGroup(metricName string, metricType string) *MetricLoggerGroup {
+func NewMetricLoggerGroup(metricName string, metricType MetricType) *MetricLoggerGroup {
 	metricLoggerGroup := &MetricLoggerGroup{
 		Name:          metricName,
 		MetricType:    metricType,
@@ -86,7 +98,7 @@ func (g *MetricLoggerGroup) GetMetricLogger(destination string, port string, sub
 	return g.MetricLoggers[key]
 }
 
-func NewMetricLogger(destination string, port string, subset string, metricName string, metricType string, refreshPeriod time.Duration) *MetricLogger {
+func NewMetricLogger(destination string, port string, subset string, metricName string, metricType MetricType, refreshPeriod time.Duration) *MetricLogger {
 	metricLogger := &MetricLogger{
 		Name:          metricName,
 		MetricType:    metricType,
@@ -94,10 +106,10 @@ func NewMetricLogger(destination string, port string, subset string, metricName 
 		Port:          port,
 		Subset:        subset,
 		RefreshPeriod: refreshPeriod,
-		ValueMaps: []map[int64]float64{
-			make(map[int64]float64, 0),
-			make(map[int64]float64, 0),
-			make(map[int64]float64, 0),
+		ValueMaps: []map[int64][]float64{
+			make(map[int64][]float64, 0),
+			make(map[int64][]float64, 0),
+			make(map[int64][]float64, 0),
 		},
 	}
 	atomic.StoreInt32(&metricLogger.ActiveID, 0)
@@ -123,17 +135,25 @@ func (m *MetricLogger) Setup() {
 func (m *MetricLogger) Push(timestamp int64, value float64) {
 	id := atomic.LoadInt32(&m.ActiveID)
 	if _, ok := m.ValueMaps[id][timestamp]; !ok {
-		m.ValueMaps[id][timestamp] = value
+		m.ValueMaps[id][timestamp] = []float64{value}
 		return
 	}
-	m.ValueMaps[id][timestamp] += value
+	switch m.MetricType {
+	case Categorical:
+		m.ValueMaps[id][timestamp][0] += value
+	case Valued:
+		m.ValueMaps[id][timestamp] = append(m.ValueMaps[id][timestamp], value)
+	default: // default is valued
+		m.ValueMaps[id][timestamp] = append(m.ValueMaps[id][timestamp], value)
+	}
+
 }
 
 func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering() *MetricValues {
 	id := atomic.LoadInt32(&m.ActiveID)
 	now := time.Now().Unix()
 	timeStart := now - int64(m.RefreshPeriod.Seconds())
-	mergedValueMap := make(map[int64]float64, 0)
+	mergedValueMap := make(map[int64][]float64, 0)
 	for index, valueMap := range m.ValueMaps {
 		if int32(index) != id {
 			for timestamp, value := range valueMap {
@@ -141,14 +161,16 @@ func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering() *Me
 					if _, ok := mergedValueMap[timestamp]; !ok {
 						mergedValueMap[timestamp] = value
 					} else {
-						mergedValueMap[timestamp] += value
+						mergedValueMap[timestamp] = append(mergedValueMap[timestamp], value...)
 					}
 				}
 			}
 		}
 	}
 	return &MetricValues{
-		Values: mergedValueMap,
+		StartTime: timeStart,
+		EndTime:   now,
+		Values:    mergedValueMap,
 	}
 }
 
@@ -162,18 +184,36 @@ func (m *MetricLogger) RefreshMetricLogger() error {
 	}
 	id := atomic.LoadInt32(&m.ActiveID)
 	oldestID := (int(id) - 1) % len(m.ValueMaps)
-	m.ValueMaps[oldestID] = make(map[int64]float64, 0)
+	m.ValueMaps[oldestID] = make(map[int64][]float64, 0)
 	atomic.StoreInt32(&m.ActiveID, int32(oldestID))
 	return nil
 }
 
 // ProcessMetricLogger processes metrics and trigger send metrics
 func (m *MetricLogger) ProcessMetricLogger(metricValues *MetricValues) error {
-	values := make([]float64, 0, len(metricValues.Values))
-	for _, v := range metricValues.Values {
-		// TODO add mising values while iterating
-		values = append(values, v)
+	allValues := make([]float64, 0, len(metricValues.Values))
+	timeLength := metricValues.EndTime - metricValues.StartTime + 1
+	timeSeriesAsSum := make([]float64, timeLength, timeLength)
+	timeSeriesAsAvg := make([]float64, timeLength, timeLength)
+	for t, v := range metricValues.Values {
+		allValues = append(allValues, v...)
+		sum, _ := stats.Sum(v)
+		avg, _ := stats.Mean(v)
+		index := t - metricValues.StartTime
+		if index >= 0 && index < timeLength {
+			timeSeriesAsSum[index] = sum
+			timeSeriesAsAvg[index] = avg
+		}
 	}
+	CalculateMetricStatsAndSend(allValues)
+	CalculateMetricStatsAndSend(timeSeriesAsSum)
+	CalculateMetricStatsAndSend(timeSeriesAsAvg)
+
+	return nil
+}
+
+// CalculateMetricStatsAndSend does what its name says
+func CalculateMetricStatsAndSend(values []float64) error {
 	// Calculate metrics and send it to vamp api
 	metricStats := MetricStats{
 		NumberOfElements:  float64(len(values)),
