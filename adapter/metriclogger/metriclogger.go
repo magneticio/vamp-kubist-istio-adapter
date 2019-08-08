@@ -98,7 +98,7 @@ func NewMetricLoggerGroup(metricName string, metricType MetricType) *MetricLogge
 		MetricLoggers: make(map[string]*MetricLogger),
 		RefreshPeriod: DefaultRefreshPeriod,
 	}
-	// metricLoggerGroup.Setup()
+	metricLoggerGroup.Setup()
 	return metricLoggerGroup
 }
 
@@ -125,19 +125,24 @@ func NewMetricLogger(destination string, port string, subset string, metricName 
 		},
 	}
 	atomic.StoreInt32(&metricLogger.ActiveID, 0)
-	metricLogger.Setup() // there should be a way to delete when it is no longer needed.
 	return metricLogger
 }
 
-func (m *MetricLogger) Setup() {
-	logging.Info("Setup Metric logger for %v Refresh period: %v\n", m.Name, m.RefreshPeriod)
-	m.RefreshMetricLogger()
-	ticker := time.NewTicker(m.RefreshPeriod)
+// Setup sets up a periodic process to calculate and send metrics
+func (g *MetricLoggerGroup) Setup() {
+	logging.Info("Setup Metric logger Group for %v Refresh period: %v\n", g.Name, g.RefreshPeriod)
+	for _, metricLogger := range g.MetricLoggers {
+		go metricLogger.RefreshMetricLogger()
+	}
+	ticker := time.NewTicker(g.RefreshPeriod)
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				m.RefreshMetricLogger()
+				// TODO: cleanup unused metric loggers
+				for _, metricLogger := range g.MetricLoggers {
+					go metricLogger.RefreshMetricLogger()
+				}
 			}
 		}
 	}()
@@ -230,7 +235,7 @@ func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering() *Me
 	}
 }
 
-// RefreshMetricLogger
+// RefreshMetricLogger trigger process and cleanup of metric buckets
 func (m *MetricLogger) RefreshMetricLogger() error {
 	logging.Info("Process and Clean Metriclogger Values for %v\n", m.Name)
 	metricValues := m.MergeValuesOfNonActiveBucketsWithTimeBasedFiltering()
@@ -383,7 +388,8 @@ func CalculateMetricStatsAndSend(valuesRaw []float64) error {
 func Rate(input stats.Float64Data) (float64, error) {
 	var result float64
 	if input.Len() <= 1 {
-		return math.NaN(), errors.New("To calculate rate length should be larger than 1")
+		return math.NaN(),
+			errors.New("Calculation of rate length requires array length to be larger than 1")
 	}
 	prev := input.Get(0)
 	sum := float64(0)
