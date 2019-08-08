@@ -2,11 +2,9 @@ package processor
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"net/http"
 	"regexp"
-	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -20,8 +18,6 @@ import (
 const bufferSize = 1000
 
 var LogInstanceChannel = make(chan *models.LogInstance, bufferSize)
-
-var latencyMetricLoggerGroup *metriclogger.MetricLoggerGroup = metriclogger.NewMetricLoggerGroup("latency")
 
 var ExperimentLoggers0 models.ExperimentLoggers
 var ExperimentLoggers1 models.ExperimentLoggers
@@ -86,32 +82,17 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 
 	for metricName, metricValue := range logInstance.Values {
 		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
-			if metricInfo.Type == "categorical" {
-				groupName := fmt.Sprintf(metricInfo.NameFormat, metricValue)
+			groupNames := metricInfo.GetMetricLoggerNames(metricName, metricValue)
+			for _, groupName := range groupNames {
 				if metricLoggerGroup, exitInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; exitInGroupMap {
 					for _, subsetInfo := range subsets {
 						for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
 							if port != "" {
 								if string(portWith) == port {
-									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, +1)
+									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 								}
 							} else {
-								metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, +1)
-							}
-						}
-					}
-				}
-			} else {
-				if metricLoggerGroup, exitInGroupMap := metriclogger.MetricLoggerGroupMap[metricName]; exitInGroupMap {
-					value := ConvertToFloat64(metricValue)
-					for _, subsetInfo := range subsets {
-						for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
-							if port != "" {
-								if string(portWith) == port {
-									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, value)
-								}
-							} else {
-								metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, value)
+								metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 							}
 						}
 					}
@@ -314,22 +295,4 @@ func GetMergedExperimentLoggers() *models.ExperimentLoggers {
 		}
 	}
 	return &merged
-}
-
-func ConvertToFloat64(i interface{}) float64 {
-	switch v := i.(type) {
-	case int:
-		return float64(v)
-	case string:
-		if s, err := strconv.ParseFloat(v, 64); err == nil {
-			return s
-		} else {
-			fmt.Printf("Float parsing failed %v!\n", i)
-		}
-	case time.Duration:
-		return float64(v.Nanoseconds()) / float64(1e6) // convert to milliseconds
-	default:
-		fmt.Printf("unknown type type %T!\n", v)
-	}
-	return 0
 }
