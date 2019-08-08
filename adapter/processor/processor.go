@@ -79,10 +79,14 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	port := logInstance.DestinationPort
 	labels := logInstance.DestinationLabels
 	subsets := subsetmapper.GetSubsetByLabels(destination, labels)
+	// TODO: read these values
+	apiProtocol := "http"
+	requestMethod := "get"
+	responseCode := "200"
 
 	for metricName, metricValue := range logInstance.Values {
 		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
-			groupNames := metricInfo.GetMetricLoggerNames(metricName, metricValue)
+			groupNames := metricInfo.GetMetricLoggerNames(metricName, apiProtocol, requestMethod, responseCode, metricValue)
 			for _, groupName := range groupNames {
 				if metricLoggerGroup, exitInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; exitInGroupMap {
 					for _, subsetInfo := range subsets {

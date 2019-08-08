@@ -17,7 +17,7 @@ const DefaultRefreshPeriod = 30 * time.Second
 var MetricDefinitons = map[string]MetricInfo{
 	"latency": MetricInfo{
 		Type:       Valued,
-		NameFormat: "latency",
+		NameFormat: "duration-%v",
 	},
 	"responseCode": MetricInfo{
 		Type:       Categorical,
@@ -25,16 +25,43 @@ var MetricDefinitons = map[string]MetricInfo{
 	},
 }
 
+// MapValueToPossibleCodes generates codes for possible variations of a metric
+func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseCode string) []string {
+	// Switch by protocol to keep it open to develop for other protocol, like grpc and tcp
+	codeString := fmt.Sprintf("%v", responseCode) // this can be int
+	switch apiProtocol {
+	case "http", "https":
+		if len(codeString) > 0 {
+			return []string{
+				"",
+				codeString,
+				fmt.Sprintf("%vxx", codeString[0]),
+				fmt.Sprintf("%v-%v", requestMethod, codeString),
+				fmt.Sprintf("%v-%vxx", requestMethod, codeString[0]),
+			}
+		}
+	default:
+		return []string{codeString}
+	}
+	return []string{codeString}
+}
+
+// TODO: Populate this map automatically
+
+// MetricLoggerGroupMap returns map of metric logger groups
 var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
 	"latency":      NewMetricLoggerGroup("latency", Valued),
 	"response-200": NewMetricLoggerGroup("response-200", Categorical),
 	"response-500": NewMetricLoggerGroup("response-500", Categorical),
 }
 
+// MetricType represent enum type of Valued or Categorical metrics
 type MetricType int
 
 const (
+	// Valued metrics that are not time series
 	Valued MetricType = iota
+	// Categorical metrics are time series like 200s, 500s per second
 	Categorical
 )
 
@@ -167,13 +194,25 @@ func ConvertToFloat64(i interface{}) float64 {
 }
 
 // TODO: add other info like http method
-// GetMetricLoggerName return name to be used as metric identifier
-func (m *MetricInfo) GetMetricLoggerNames(name string, value interface{}) []string {
+
+// GetMetricLoggerNames return name to be used as metric identifier
+func (m *MetricInfo) GetMetricLoggerNames(name string, apiProtocol, requestMethod, responseCode string, value interface{}) []string {
 	switch m.Type {
 	case Categorical:
-		groupName := fmt.Sprintf(m.NameFormat, value)
-		return []string{groupName}
+		codes := MapValueToPossibleCodes(apiProtocol, requestMethod, responseCode)
+		names := make([]string, len(codes))
+		for _, code := range codes {
+			groupName := fmt.Sprintf(m.NameFormat, code)
+			names = append(names, groupName)
+		}
+		return names
 	case Valued:
+		codes := MapValueToPossibleCodes(apiProtocol, requestMethod, responseCode)
+		names := make([]string, len(codes))
+		for _, code := range codes {
+			groupName := fmt.Sprintf(m.NameFormat, code)
+			names = append(names, groupName)
+		}
 		return []string{name}
 	default: // default is valued
 		return []string{name}
