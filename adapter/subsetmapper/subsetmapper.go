@@ -158,16 +158,19 @@ spec:
 // GenerateInstanceWithLogEntryTemplate generate instance template with given labels and namespace
 func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *models.Instance {
 	variables := map[string]string{
-		"source":             "source.labels[\"app\"] | source.workload.name | \"unknown\"",
-		"user":               "source.user | \"unknown\"",
-		"destination":        "destination.labels[\"app\"] | destination.name | destination.service.name | \"unknown\"",
-		"destinationPort":    "destination.port | 0",
-		"responseCode":       "response.code | 0",
-		"responseSize":       "response.size | 0",
-		"latency":            "response.duration | \"0ms\"",
-		"url":                "request.path | \"\"",
-		"cookies":            "request.headers[\"cookie\"] | \"\"",
-		"destinationVersion": "destination.labels[\"version\"] | \"unknown\"",
+		"source":                 "source.labels[\"app\"] | source.workload.name | \"unknown\"",
+		"user":                   "source.user | \"unknown\"",
+		"destinationName":        "destination.name | \"unknown\"",
+		"destinationServiceName": "destination.service.name | \"unknown\"",
+		"destinationNamespace":   "destination.namespace | \"unknown\"",
+		"destinationPort":        "destination.port | 0",
+		"responseCode":           "response.code | 0",
+		"apiProtocol":            "api.Protocol | \"\"", // http, https, or grpc
+		"requestMethod":          "request.method | \"\"",
+		"responseSize":           "response.size | 0",
+		"responseDuration":       "response.duration | \"0ms\"",
+		"url":                    "request.path | \"\"",
+		"cookies":                "request.headers[\"cookie\"] | \"\"",
 	}
 
 	labelPrefix := "label"

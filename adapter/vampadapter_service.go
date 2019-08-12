@@ -140,14 +140,20 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
 				logInstance.Values[k] = v.GetStringValue()
 			} else if k == "url" {
 				logInstance.Values[k] = v.GetStringValue()
-			} else if k == "destination" {
+			} else if k == "destinationName" {
 				logInstance.Values[k] = v.GetStringValue()
+				logInstance.Destination = v.GetStringValue()
 			} else if k == "responseCode" {
 				logInstance.Values[k] = v.GetInt64Value()
-			} else if k == "latency" {
+			} else if k == "requestDuration" {
 				logInstance.Values[k] = v.GetDurationValue()
 			} else if k == "destinationPort" {
 				logInstance.Values[k] = v.GetInt64Value()
+				logInstance.DestinationPort = v.GetStringValue()
+			} else if k == "apiProtocol" {
+				logInstance.Values[k] = v.GetStringValue()
+			} else if k == "requestMethod" {
+				logInstance.Values[k] = v.GetStringValue()
 			} else if strings.HasPrefix(k, "label_") {
 				labelName := strings.TrimPrefix(k, "label_")
 				labelValue := v.GetStringValue()

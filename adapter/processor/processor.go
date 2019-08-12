@@ -2,6 +2,7 @@ package processor
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
 	"regexp"
@@ -72,6 +73,10 @@ func RunProcessor() {
 	}
 }
 
+func GetStringFromInterface(values map[string]interface{}, key string) string {
+	return fmt.Sprintf("%v", values[key])
+}
+
 // ProcessInstanceForMetrics processes a log instance for extracting metrics
 func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	timestamp := logInstance.Timestamp
@@ -79,10 +84,10 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	port := logInstance.DestinationPort
 	labels := logInstance.DestinationLabels
 	subsets := subsetmapper.GetSubsetByLabels(destination, labels)
-	// TODO: read these values
-	apiProtocol := "http"
-	requestMethod := "get"
-	responseCode := "200"
+	// TODO: add error check
+	apiProtocol := GetStringFromInterface(logInstance.Values, "apiProtocol")
+	requestMethod := GetStringFromInterface(logInstance.Values, "requestMethod")
+	responseCode := GetStringFromInterface(logInstance.Values, "responseCode")
 
 	for metricName, metricValue := range logInstance.Values {
 		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
