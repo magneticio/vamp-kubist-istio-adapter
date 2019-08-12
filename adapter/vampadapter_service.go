@@ -21,18 +21,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"bytes"
 	"os"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/config"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/processor"
-	"github.com/magneticio/vampkubistcli/logging"
-	"github.com/spf13/cast"
 	"istio.io/api/mixer/adapter/model/v1beta1"
 	policy "istio.io/api/policy/v1beta1"
 	"istio.io/istio/mixer/template/logentry"
@@ -125,61 +123,61 @@ func decodeValue(in interface{}) interface{} {
 	}
 }
 
-func (s *VampAdapter) instances(in []*logentry.InstanceMsg) string {
-	var b bytes.Buffer
-	var URL string
-	var Cookie string
-	var Destination string
-	var ResponseCode string
-	var Latency string
-	var DestinationPort string
-	var DestinationVersion string
-	var DestinationLabels map[string]string
+// instances conver InstanceMsg to internal LogInstance type and send to processor queue
+func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
+
 	for _, inst := range in {
-		// timeStamp := inst.Timestamp.Value.String()
-		// severity := inst.Severity
-		// fmt.Println("TimeStamp: ", timeStamp)
-		// fmt.Println("Severity: ", severity)
+		logInstance := &models.LogInstance{
+			Timestamp:         inst.Timestamp.Value.Seconds,
+			DestinationLabels: make(map[string]string, 0),
+			Values:            make(map[string]interface{}, 1),
+		}
+		// severity := inst.Severity // TODO: add check, we expect severity to be info
+		// TODO: we could do this without a loop
 		for k, v := range inst.Variables {
 			// fmt.Println(k, ": ", decodeValue(v.GetValue()))
 			if k == "cookies" {
-				Cookie = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetStringValue()
 			} else if k == "url" {
-				URL = fmt.Sprintf("%v", decodeValue(v.GetValue()))
-			} else if k == "destination" {
-				Destination = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetStringValue()
+			} else if k == "destinationName" {
+				logInstance.Values[k] = v.GetStringValue()
+				logInstance.Destination = v.GetStringValue()
 			} else if k == "responseCode" {
-				ResponseCode = fmt.Sprintf("%v", decodeValue(v.GetValue()))
-			} else if k == "latency" {
-				Latency = fmt.Sprintf("%v", decodeValue(v.GetValue()))
+				logInstance.Values[k] = v.GetInt64Value()
+			} else if k == "requestDuration" {
+				logInstance.Values[k] = v.GetDurationValue()
 			} else if k == "destinationPort" {
-				DestinationPort = fmt.Sprintf("%v", decodeValue(v.GetValue()))
-			} else if k == "destinationVersion" {
-				DestinationVersion = fmt.Sprintf("%v", decodeValue(v.GetValue()))
-			} else if k == "destinationLabels" {
-				if destinationLabelsTemp, err := cast.ToStringMapStringE(decodeValue(v.GetValue())); err != nil {
-					DestinationLabels = destinationLabelsTemp
-				} else {
-					logging.Error("Cast Error: %v\n", err)
+				logInstance.Values[k] = v.GetInt64Value()
+				logInstance.DestinationPort = v.GetStringValue()
+			} else if k == "apiProtocol" {
+				logInstance.Values[k] = v.GetStringValue()
+			} else if k == "requestMethod" {
+				logInstance.Values[k] = v.GetStringValue()
+			} else if strings.HasPrefix(k, "label_") {
+				labelName := strings.TrimPrefix(k, "label_")
+				labelValue := v.GetStringValue()
+				if labelValue != "" {
+					logInstance.DestinationLabels[labelName] = labelValue
 				}
 			}
+			/*
+				TODO: enable this when StringMap type bug fix is merged to istio
+				else if k == "destinationLabels" {
+					if destinationLabelsTemp, err := cast.ToStringMapStringE(decodeValue(v.GetValue())); err != nil {
+						DestinationLabels = destinationLabelsTemp
+					} else {
+						logging.Error("Cast Error: %v\n", err)
+					}
+				} */
 
 		}
-		logInstance := &models.LogInstance{
-			Destination:        Destination,
-			URL:                URL,
-			Cookie:             Cookie,
-			ResponseCode:       ResponseCode,
-			Latency:            Latency,
-			DestinationPort:    DestinationPort,
-			DestinationVersion: DestinationVersion,
-			DestinationLabels:  DestinationLabels,
-		}
+
 		processor.LogInstanceChannel <- logInstance
 		// fmt.Printf("logInstance: %v\n", logInstance)
 	}
 
-	return b.String()
+	return nil
 }
 
 // Addr returns the listening address of the server

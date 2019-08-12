@@ -48,10 +48,13 @@ func TestProcessIntance1(t *testing.T) {
 	go processor.RunProcessor()
 
 	logInstance1 := &models.LogInstance{
-		Destination: destination,
-		URL:         targetPath,
-		Cookie:      generateCookie(experimentName, user1ID, subset1Name),
+		Timestamp:         time.Now().Unix(),
+		Destination:       destination,
+		DestinationLabels: make(map[string]string, 0),
+		Values:            make(map[string]interface{}, 1),
 	}
+	logInstance1.Values["url"] = targetPath
+	logInstance1.Values["cookies"] = generateCookie(experimentName, user1ID, subset1Name)
 
 	experimentConfigurations := configurator.GetExperimentConfigurations()
 	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance1)
@@ -59,28 +62,38 @@ func TestProcessIntance1(t *testing.T) {
 	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
 	logInstance2 := &models.LogInstance{
-		Destination: destination,
-		URL:         targetPath,
-		Cookie:      generateCookie(experimentName, user2ID, subset1Name),
+		Timestamp:         time.Now().Unix(),
+		Destination:       destination,
+		DestinationLabels: make(map[string]string, 0),
+		Values:            make(map[string]interface{}, 1),
 	}
+	logInstance2.Values["url"] = targetPath
+	logInstance2.Values["cookies"] = generateCookie(experimentName, user2ID, subset1Name)
+
 	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance2)
 
 	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
 	logInstance3 := &models.LogInstance{
-		Destination: destination,
-		URL:         targetPath,
-		Cookie:      generateCookie(experimentName, user3ID, subset2Name),
+		Timestamp:         time.Now().Unix(),
+		Destination:       destination,
+		DestinationLabels: make(map[string]string, 0),
+		Values:            make(map[string]interface{}, 1),
 	}
+	logInstance3.Values["url"] = targetPath
+	logInstance3.Values["cookies"] = generateCookie(experimentName, user3ID, subset2Name)
 
 	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance3)
 	assert.Equal(t, 1, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset2Name].UserLogs[user3ID])
 
 	logInstance4 := &models.LogInstance{
-		Destination: destination,
-		URL:         targetPath,
-		Cookie:      generateCookie(experimentName, user1ID, subset1Name),
+		Timestamp:         time.Now().Unix(),
+		Destination:       destination,
+		DestinationLabels: make(map[string]string, 0),
+		Values:            make(map[string]interface{}, 1),
 	}
+	logInstance4.Values["url"] = targetPath
+	logInstance4.Values["cookies"] = generateCookie(experimentName, user1ID, subset1Name)
 
 	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance4)
 	assert.Equal(t, 2, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])

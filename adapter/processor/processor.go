@@ -2,6 +2,7 @@ package processor
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
 	"regexp"
@@ -9,7 +10,9 @@ import (
 	"time"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/metriclogger"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/subsetmapper"
 	"github.com/magneticio/vampkubistcli/logging"
 )
 
@@ -61,6 +64,7 @@ func SetupProcessor() {
 
 func RunProcessor() {
 	configurator.SetupConfigurator()
+	subsetmapper.Setup()
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel
@@ -69,29 +73,68 @@ func RunProcessor() {
 	}
 }
 
-func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
-	destination := logInstance.Destination
-	port := logInstance.DestinationPort
-	version := logInstance.DestinationVersion
-	labels := logInstance.DestinationLabels
-
-	latency := logInstance.Latency
-	logging.Info("destination: %v port: %v version: %v latency: %v labels: %v\n", destination, port, version, latency, labels)
-	// metricLogger := GetMetricLoggers()
-	// key := fmt.Sprintf("%v-%v-%v", destination, port, version)
-	// metricLogger.Log("latency", key, latency)
+func GetStringFromInterface(values map[string]interface{}, key string) string {
+	return fmt.Sprintf("%v", values[key])
 }
 
-func GetMetricLoggers() error {
-	return nil
+// ProcessInstanceForMetrics processes a log instance for extracting metrics
+func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
+	timestamp := logInstance.Timestamp
+	destination := logInstance.Destination
+	port := logInstance.DestinationPort
+	labels := logInstance.DestinationLabels
+	subsets := subsetmapper.GetSubsetByLabels(destination, labels)
+	// TODO: add error check
+	apiProtocol := GetStringFromInterface(logInstance.Values, "apiProtocol")
+	requestMethod := GetStringFromInterface(logInstance.Values, "requestMethod")
+	responseCode := GetStringFromInterface(logInstance.Values, "responseCode")
+
+	for metricName, metricValue := range logInstance.Values {
+		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
+			groupNames := metricInfo.GetMetricLoggerNames(metricName, apiProtocol, requestMethod, responseCode, metricValue)
+			for _, groupName := range groupNames {
+				if metricLoggerGroup, exitInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; exitInGroupMap {
+					for _, subsetInfo := range subsets {
+						for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
+							if port != "" {
+								if string(portWith) == port {
+									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
+								}
+							} else {
+								metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 func ProcessInstanceForExperiments(
 	experimentConfigurations *models.ExperimentConfigurations,
 	logInstance *models.LogInstance) {
-
+	URL := ""
+	if url, ok := logInstance.Values["url"]; ok {
+		if urlString, ok2 := url.(string); ok2 {
+			URL = urlString
+		} else {
+			logging.Error("URL conversion to string failed\n")
+			return // string conversion problem
+		}
+	}
 	header := http.Header{}
-	header.Add("Cookie", logInstance.Cookie)
+	if cookies, ok := logInstance.Values["cookies"]; ok {
+		if cookiesString, ok2 := cookies.(string); ok2 {
+			header.Add("Cookie", cookiesString)
+		} else {
+			logging.Error("Cookie conversion to string failed\n")
+			return // string conversion problem
+		}
+	} else {
+		return // no cookie
+	}
+	// TODO: url can be added to request like cookies
 	request := http.Request{
 		Header: header,
 	}
@@ -110,7 +153,7 @@ func ProcessInstanceForExperiments(
 					if targetRegexError != nil {
 						logging.Info("Target Regex Error: %v\n", targetRegexError)
 					}
-					if targetRegex.MatchString(logInstance.URL) {
+					if targetRegex.MatchString(URL) {
 						experimentLogger.ExperimentLogs[experimentName].SubsetLogs[subsetName].UserLogs[userID]++
 					}
 				} else {

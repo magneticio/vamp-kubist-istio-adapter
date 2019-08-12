@@ -8,10 +8,9 @@ import (
 	"time"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
-	"github.com/magneticio/vampkubistcli/client"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
 	"github.com/magneticio/vampkubistcli/logging"
 	clientmodels "github.com/magneticio/vampkubistcli/models"
-	"github.com/spf13/viper"
 )
 
 var ExperimentConfigurations0 models.ExperimentConfigurations
@@ -20,41 +19,6 @@ var ExperimentConfigurations1 models.ExperimentConfigurations
 var activeConfigurationID int32
 
 const RefreshPeriod = 30 * time.Second
-
-var URL string
-var Token string
-var APIVersion string
-var Cert string
-
-// TokenStore is initiliazed once and shared with all clients
-var TokenStore client.TokenStore = &client.InMemoryTokenStore{}
-var Project string
-var Cluster string
-var VirtualCluster string
-
-func InitViperConfig(path string, configName string) {
-	viper.SetConfigName(configName) // name of config file (without extension)
-	viper.AddConfigPath(path)       // path to look for the config file in
-	viper.AddConfigPath(".")        // optionally look for config in the working directory
-	err := viper.ReadInConfig()     // Find and read the config file
-	if err != nil {                 // Handle errors reading the config file
-		logging.Error("Error config file: %s \n", err)
-	}
-}
-
-func getRestClient() (*client.RestClient, error) {
-	// Add client pooling
-	URL = viper.GetString("url")
-	Token = viper.GetString("token")
-	APIVersion = viper.GetString("apiversion")
-	Cert = viper.GetString("cert")
-
-	restClient := client.NewRestClient(URL, Token, APIVersion, false, Cert, &TokenStore)
-	if restClient == nil {
-		return nil, errors.New("Rest Client can not be initiliazed")
-	}
-	return restClient, nil
-}
 
 func GetExperimentConfigurations() *models.ExperimentConfigurations {
 	if atomic.LoadInt32(&activeConfigurationID) == 0 {
@@ -88,17 +52,14 @@ func ParseExperimentConfiguration(sourceAsJson string) (*models.ExperimentConfig
 
 // GenerateNewExperimentConfigurations gets experiments from the service
 func GenerateNewExperimentConfigurations() (*models.ExperimentConfigurations, error) {
-	restClient, restCLientError := getRestClient()
+	restClient, restCLientError := vampclientprovider.GetRestClient()
 	if restCLientError != nil {
 		return nil, errors.New("Rest Client can not be initiliazed")
 	}
-	Project = viper.GetString("project")
-	Cluster = viper.GetString("cluster")
-	VirtualCluster = viper.GetString("virtualcluster")
 	values := make(map[string]string)
-	values["project"] = Project
-	values["cluster"] = Cluster
-	values["virtual_cluster"] = VirtualCluster
+	values["project"] = vampclientprovider.Project
+	values["cluster"] = vampclientprovider.Cluster
+	values["virtual_cluster"] = vampclientprovider.VirtualCluster
 	listOfExperiments, err := restClient.List("experiment", "json", values, false)
 	if err != nil {
 		return nil, err
@@ -147,17 +108,14 @@ func SetupConfigurator() {
 }
 
 func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) error {
-	restClient, restCLientError := getRestClient()
+	restClient, restCLientError := vampclientprovider.GetRestClient()
 	if restCLientError != nil {
 		return errors.New("Rest Client can not be initiliazed")
 	}
-	Project = viper.GetString("project")
-	Cluster = viper.GetString("cluster")
-	VirtualCluster = viper.GetString("virtualcluster")
 	values := make(map[string]string)
-	values["project"] = Project
-	values["cluster"] = Cluster
-	values["virtual_cluster"] = VirtualCluster
+	values["project"] = vampclientprovider.Project
+	values["cluster"] = vampclientprovider.Cluster
+	values["virtual_cluster"] = vampclientprovider.VirtualCluster
 
 	for experimentName, experimentStat := range experimentStatsGroup.ExperimentStatsMap {
 		for subsetName, subsetStat := range experimentStat.Subsets {
