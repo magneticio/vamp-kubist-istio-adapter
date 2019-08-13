@@ -63,7 +63,7 @@ type Instance struct {
 	APIVersion string            `yaml:"apiVersion,omitempty" json:"apiVersion,omitempty"`
 	Kind       string            `yaml:"kind,omitempty" json:"kind,omitempty"`
 	Metadata   map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty"`
-	Spec       InstanceSpec      `yaml:"Spec,omitempty" json:"Spec,omitempty"`
+	Spec       InstanceSpec      `yaml:"spec,omitempty" json:"spec,omitempty"`
 }
 
 type InstanceSpec struct {
