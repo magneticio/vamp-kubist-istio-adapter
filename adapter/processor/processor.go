@@ -65,6 +65,7 @@ func SetupProcessor() {
 func RunProcessor() {
 	configurator.SetupConfigurator()
 	subsetmapper.Setup()
+	metriclogger.Setup()
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel

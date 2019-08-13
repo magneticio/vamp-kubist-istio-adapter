@@ -118,6 +118,13 @@ type MetricStats struct {
 	P75               float64
 }
 
+func Setup() {
+	logging.Info("Setting ip Metric Logger Groups")
+	for _, val := range MetricLoggerGroupMap {
+		val.Setup()
+	}
+}
+
 func NewMetricLoggerGroup(metricName string, metricType MetricType) *MetricLoggerGroup {
 	metricLoggerGroup := &MetricLoggerGroup{
 		Name:          metricName,
@@ -125,7 +132,7 @@ func NewMetricLoggerGroup(metricName string, metricType MetricType) *MetricLogge
 		MetricLoggers: make(map[string]*MetricLogger),
 		RefreshPeriod: DefaultRefreshPeriod,
 	}
-	metricLoggerGroup.Setup()
+	// metricLoggerGroup.Setup()
 	return metricLoggerGroup
 }
 
