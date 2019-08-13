@@ -99,14 +99,18 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 				if metricLoggerGroup, existInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; existInGroupMap {
 					for _, subsetInfo := range subsets {
 						logging.Info("Subset info: %v\n", subsetInfo)
-						for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
-							if port != "" {
-								if string(portWith) == port {
+						if len(subsetInfo.SubsetWithPorts.Ports) > 0 {
+							for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
+								if port != "" {
+									if string(portWith) == port {
+										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
+									}
+								} else {
 									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 								}
-							} else {
-								metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 							}
+						} else {
+							metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 						}
 					}
 				}
