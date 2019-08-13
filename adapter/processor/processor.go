@@ -90,6 +90,7 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	requestMethod := GetStringFromInterface(logInstance.Values, "requestMethod")
 	responseCode := GetStringFromInterface(logInstance.Values, "responseCode")
 
+	logging.Info("Instance: %v %v %v %v\n", logInstance, apiProtocol, requestMethod, responseCode)
 	for metricName, metricValue := range logInstance.Values {
 		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
 			groupNames := metricInfo.GetMetricLoggerNames(metricName, apiProtocol, requestMethod, responseCode, metricValue)

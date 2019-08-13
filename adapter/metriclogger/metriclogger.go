@@ -119,7 +119,7 @@ type MetricStats struct {
 }
 
 func Setup() {
-	logging.Info("Setting ip Metric Logger Groups")
+	logging.Info("Setting up Metric Logger Groups")
 	for _, val := range MetricLoggerGroupMap {
 		val.Setup()
 	}
@@ -166,7 +166,7 @@ func NewMetricLogger(destination string, port string, subset string, metricName 
 func (g *MetricLoggerGroup) Setup() {
 	logging.Info("Setup Metric logger Group for %v Refresh period: %v\n", g.Name, g.RefreshPeriod)
 	for _, metricLogger := range g.MetricLoggers {
-		go metricLogger.RefreshMetricLogger()
+		metricLogger.RefreshMetricLogger()
 	}
 	ticker := time.NewTicker(g.RefreshPeriod)
 	go func() {
@@ -175,7 +175,7 @@ func (g *MetricLoggerGroup) Setup() {
 			case <-ticker.C:
 				// TODO: cleanup unused metric loggers
 				for _, metricLogger := range g.MetricLoggers {
-					go metricLogger.RefreshMetricLogger()
+					metricLogger.RefreshMetricLogger()
 				}
 			}
 		}
@@ -283,10 +283,11 @@ func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering() *Me
 
 // RefreshMetricLogger trigger process and cleanup of metric buckets
 func (m *MetricLogger) RefreshMetricLogger() error {
-	logging.Info("Process and Clean Metriclogger Values for %v\n", m.Name)
+	logging.Info(">>>>>> Process and Clean Metriclogger Values for %v\n", m.Name)
 	metricValues := m.MergeValuesOfNonActiveBucketsWithTimeBasedFiltering()
 	processError := m.ProcessMetricLogger(metricValues)
 	if processError != nil {
+		logging.Error("Error in Refresh Metric Logger: %v\n", processError)
 		return processError
 	}
 	id := atomic.LoadInt32(&m.ActiveID)
