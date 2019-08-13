@@ -111,7 +111,7 @@ func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInf
 			sb.WriteString(key)
 			sb.WriteString(":")
 			sb.WriteString(labels[key])
-			if i != len(labels) {
+			if i < len(combination)-1 {
 				sb.WriteString("\n")
 			}
 		}
