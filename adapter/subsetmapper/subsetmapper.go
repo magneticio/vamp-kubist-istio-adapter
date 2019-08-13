@@ -165,7 +165,7 @@ func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *mo
 		"destinationNamespace":   "destination.namespace | \"\"",
 		"destinationPort":        "destination.port | 0",
 		"responseCode":           "response.code | 0",
-		"apiProtocol":            "api.Protocol | \"\"", // http, https, or grpc
+		"apiProtocol":            "api.protocol | \"\"", // http, https, or grpc
 		"requestMethod":          "request.method | \"\"",
 		"responseSize":           "response.size | 0",
 		"responseDuration":       "response.duration | \"0ms\"",
@@ -180,7 +180,7 @@ func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *mo
 	}
 
 	params := models.InstanceParams{
-		Severity:  "'\"info\"'",
+		Severity:  "\"info\"",
 		Timestamp: "request.time",
 		Variables: variables,
 	}
