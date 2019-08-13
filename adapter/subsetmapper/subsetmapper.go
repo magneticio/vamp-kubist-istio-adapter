@@ -19,8 +19,8 @@ import (
 	combinations "github.com/mxschmitt/golang-combinations"
 )
 
-var DestinationsSubsetMap0 clientmodels.DestinationsSubsetsMap
-var DestinationsSubsetMap1 clientmodels.DestinationsSubsetsMap
+var DestinationsSubsetMap0 *clientmodels.DestinationsSubsetsMap
+var DestinationsSubsetMap1 *clientmodels.DestinationsSubsetsMap
 
 var activeID int32
 
@@ -29,9 +29,9 @@ const RefreshPeriod = 30 * time.Second
 // GetDesitinationsSubsetsMap returns active subset map
 func GetDestinationsSubsetsMap() *clientmodels.DestinationsSubsetsMap {
 	if atomic.LoadInt32(&activeID) == 0 {
-		return &DestinationsSubsetMap0
+		return DestinationsSubsetMap0
 	}
-	return &DestinationsSubsetMap1
+	return DestinationsSubsetMap1
 }
 
 // RefreshDestinationsSubsetsMap updates the subset map
@@ -51,7 +51,7 @@ func RefreshDestinationsSubsetsMap() error {
 		if err != nil {
 			return err
 		}
-		DestinationsSubsetMap1 = *destinationsSubsetsMap
+		DestinationsSubsetMap1 = destinationsSubsetsMap
 		atomic.StoreInt32(&activeID, 1)
 		go ApplyLabelsToInstance(DestinationsSubsetMap1.Labels, vampclientprovider.VirtualCluster)
 		return nil
@@ -61,7 +61,7 @@ func RefreshDestinationsSubsetsMap() error {
 		if err != nil {
 			return err
 		}
-		DestinationsSubsetMap0 = *destinationsSubsetsMap
+		DestinationsSubsetMap0 = destinationsSubsetsMap
 		atomic.StoreInt32(&activeID, 0)
 		go ApplyLabelsToInstance(DestinationsSubsetMap1.Labels, vampclientprovider.VirtualCluster)
 		return nil
@@ -91,6 +91,10 @@ type SubsetInfo struct {
 // GetSubsetByLabels return all possible subsets for given labels
 func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInfo {
 	destinationsSubsetsMap := GetDestinationsSubsetsMap()
+	if destinationsSubsetsMap == nil {
+		logging.Error("DestinationsSubsetsMap is still nil")
+		return []SubsetInfo{}
+	}
 	keys := make([]string, 0, len(labels))
 	for key := range labels {
 		keys = append(keys, key)
@@ -115,6 +119,7 @@ func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInf
 		if destination != "" {
 			subsetName := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString].Subset
 			subsetPorts := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString].Ports
+			logging.Info("Subset Ports %v\n", subsetPorts)
 			subsetWithPorts := clientmodels.SubsetToPorts{
 				Subset: subsetName,
 				Ports:  subsetPorts,
@@ -127,6 +132,7 @@ func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInf
 			for destinationName, destinationMap := range destinationsSubsetsMap.DestinationsMap {
 				subsetName := destinationMap.Map[labelsMapString].Subset
 				subsetPorts := destinationMap.Map[labelsMapString].Ports
+				logging.Info("D Subset Ports %v\n", subsetPorts)
 				subsetWithPorts := clientmodels.SubsetToPorts{
 					Subset: subsetName,
 					Ports:  subsetPorts,
