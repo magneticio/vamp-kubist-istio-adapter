@@ -111,14 +111,24 @@ func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInf
 		}
 		labelsMapString := sb.String()
 		if destination != "" {
-			subsetWithPorts := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString]
+			subsetName := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString].Subset
+			subsetPorts := destinationsSubsetsMap.DestinationsMap[destination].Map[labelsMapString].Ports
+			subsetWithPorts := clientmodels.SubsetToPorts{
+				Subset: subsetName,
+				Ports:  subsetPorts,
+			}
 			subsetList = append(subsetList, SubsetInfo{
 				DestinationName: destination,
 				SubsetWithPorts: subsetWithPorts,
 			})
 		} else {
 			for destinationName, destinationMap := range destinationsSubsetsMap.DestinationsMap {
-				subsetWithPorts := destinationMap.Map[labelsMapString]
+				subsetName := destinationMap.Map[labelsMapString].Subset
+				subsetPorts := destinationMap.Map[labelsMapString].Ports
+				subsetWithPorts := clientmodels.SubsetToPorts{
+					Subset: subsetName,
+					Ports:  subsetPorts,
+				}
 				subsetList = append(subsetList, SubsetInfo{
 					DestinationName: destinationName,
 					SubsetWithPorts: subsetWithPorts,

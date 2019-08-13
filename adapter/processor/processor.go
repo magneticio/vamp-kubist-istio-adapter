@@ -94,7 +94,7 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	for metricName, metricValue := range logInstance.Values {
 		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
 			groupNames := metricInfo.GetMetricLoggerNames(metricName, apiProtocol, requestMethod, responseCode, metricValue)
-			logging.Info("Group Names for %v : %v\n", metricName, groupNames)
+			logging.Info("Group Names for %v/%v : %v\n", metricInfo.Type, metricName, groupNames)
 			for _, groupName := range groupNames {
 				if metricLoggerGroup, existInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; existInGroupMap {
 					for _, subsetInfo := range subsets {
