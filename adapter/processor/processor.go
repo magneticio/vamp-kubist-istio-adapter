@@ -94,9 +94,11 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	for metricName, metricValue := range logInstance.Values {
 		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
 			groupNames := metricInfo.GetMetricLoggerNames(metricName, apiProtocol, requestMethod, responseCode, metricValue)
+			logging.Info("Group Names for %v : %v\n", metricName, groupNames)
 			for _, groupName := range groupNames {
-				if metricLoggerGroup, exitInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; exitInGroupMap {
+				if metricLoggerGroup, existInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; existInGroupMap {
 					for _, subsetInfo := range subsets {
+						logging.Info("Subset info: %v\n", subsetInfo)
 						for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
 							if port != "" {
 								if string(portWith) == port {
@@ -143,7 +145,7 @@ func ProcessInstanceForExperiments(
 	experimentLogger := GetExperimentLoggers()
 	for _, cookie := range request.Cookies() {
 		if experimentConf, ok := experimentConfigurations.ExperimentConfigurationMap[cookie.Name]; ok {
-			logging.Info("Cookie: %v\n", cookie.Value)
+			// logging.Info("Cookie: %v\n", cookie.Value)
 			experimentName := cookie.Name
 			if targetPath, ok2 := experimentConf.Subsets[cookie.Value]; ok2 {
 				subsetName := cookie.Value
