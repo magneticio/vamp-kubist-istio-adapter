@@ -47,6 +47,7 @@ func RefreshDestinationsSubsetsMap() error {
 	values["virtual_cluster"] = vampclientprovider.VirtualCluster
 	if atomic.LoadInt32(&activeID) == 0 {
 		destinationsSubsetsMap, err := restClient.GetSubsetMap(values)
+		logging.Info("destinationsSubsetsMap %v\n", destinationsSubsetsMap)
 		if err != nil {
 			return err
 		}
@@ -56,6 +57,7 @@ func RefreshDestinationsSubsetsMap() error {
 		return nil
 	} else {
 		destinationsSubsetsMap, err := restClient.GetSubsetMap(values)
+		logging.Info("destinationsSubsetsMap %v\n", destinationsSubsetsMap)
 		if err != nil {
 			return err
 		}

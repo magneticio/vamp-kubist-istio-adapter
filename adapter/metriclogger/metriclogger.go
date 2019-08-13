@@ -291,10 +291,10 @@ func (m *MetricLogger) RefreshMetricLogger() error {
 		return processError
 	}
 	id := atomic.LoadInt32(&m.ActiveID)
-	// TODO: review this logic of calculating oldest id
-	oldestID := (int(id) - 1) % len(m.ValueMaps)
-	m.ValueMaps[oldestID] = make(map[int64][]float64, 0)
-	atomic.StoreInt32(&m.ActiveID, int32(oldestID))
+	// TODO: review this logic of calculating next active id
+	nextID := (int(id) + 1) % len(m.ValueMaps)
+	m.ValueMaps[nextID] = make(map[int64][]float64, 0)
+	atomic.StoreInt32(&m.ActiveID, int32(nextID))
 	return nil
 }
 
@@ -443,7 +443,8 @@ func Rate(input stats.Float64Data) (float64, error) {
 	for i := 1; i < input.Len(); i++ {
 		v := input.Get(i) - prev
 		sum += v
+		prev = input.Get(i)
 	}
-	result = sum / float64(input.Len())
+	result = sum / float64(input.Len()-1)
 	return result, nil
 }
