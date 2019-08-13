@@ -343,7 +343,7 @@ func (m *MetricLogger) ProcessCategoricalMetricLogger(metricValues *MetricValues
 }
 
 // CalculateMetricStatsAndSend does what its name says
-func CalculateMetricStatsAndSend(valuesRaw []float64) error {
+func CalculateMetricStatsAndSend(valuesRaw []float64) (*MetricStats, error) {
 	// Calculate metrics and send it to vamp api
 
 	values := stats.LoadRawData(valuesRaw)
@@ -431,7 +431,7 @@ func CalculateMetricStatsAndSend(valuesRaw []float64) error {
 
 	logging.Info("Metrics should be sent now: %v\n", metricStats)
 	// go sendMetric( ... )
-	return nil
+	return metricStats, nil
 }
 
 // Rate provides calculation of the rate

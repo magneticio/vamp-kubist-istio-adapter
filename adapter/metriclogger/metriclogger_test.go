@@ -36,3 +36,10 @@ func TestGetMetricLoggerNames(t *testing.T) {
 	fmt.Printf("names: %v\n", names)
 	assert.Equal(t, expectedNames, names)
 }
+
+func TestCalculateMetricStatsAndSend(t *testing.T) {
+	valuesRaw := []float64{0.1, 0.2, -0.3}
+	metricStats, _ := metriclogger.CalculateMetricStatsAndSend(valuesRaw)
+	fmt.Printf("MetricStats: %v\n", metricStats)
+	assert.Equal(t, int64(3), metricStats.NumberOfElements)
+}
