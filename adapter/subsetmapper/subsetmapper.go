@@ -214,7 +214,7 @@ func ApplyLabelsToInstance(labels []string, namespace string) error {
 		return writeError
 	}
 
-	res, kubeErr := kubecuddler.Kubectl(true, true, "apply", "-f", "/tmp/instance.yaml")
+	res, kubeErr := kubecuddler.Kubectl(true, true, "kubectl", "apply", "-f", "/tmp/instance.yaml")
 
 	if kubeErr != nil {
 		return kubeErr
