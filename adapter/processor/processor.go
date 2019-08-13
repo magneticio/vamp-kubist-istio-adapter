@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
-	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/metriclogger"
+	metriclogger "github.com/magneticio/vamp-kubist-istio-adapter/adapter/metriclogger"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/subsetmapper"
 	"github.com/magneticio/vampkubistcli/logging"
@@ -92,7 +92,7 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 
 	// logging.Info("Instance: %v %v %v %v\n", logInstance, apiProtocol, requestMethod, responseCode)
 	for metricName, metricValue := range logInstance.Values {
-		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitons[metricName]; existInMetricDefinitions {
+		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitions[metricName]; existInMetricDefinitions {
 			groupNames := metricInfo.GetMetricLoggerNames(metricName, apiProtocol, requestMethod, responseCode, metricValue)
 			logging.Info("Group Names for %v/%v : %v\n", metricInfo.Type, metricName, groupNames)
 			for _, groupName := range groupNames {

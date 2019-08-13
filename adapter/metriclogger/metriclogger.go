@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 
 const DefaultRefreshPeriod = 30 * time.Second
 
-var MetricDefinitons = map[string]MetricInfo{
+var MetricDefinitions = map[string]MetricInfo{
 	"requestDuration": MetricInfo{
 		Type:       Valued,
 		NameFormat: "requestDuration-%v",
@@ -28,6 +29,8 @@ var MetricDefinitons = map[string]MetricInfo{
 // MapValueToPossibleCodes generates codes for possible variations of a metric
 func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseCode string) []string {
 	// Switch by protocol to keep it open to develop for other protocol, like grpc and tcp
+	apiProtocol = strings.ToLower(apiProtocol)
+	requestMethod = strings.ToLower(requestMethod)
 	codeString := fmt.Sprintf("%v", responseCode) // this can be int
 	switch apiProtocol {
 	case "http", "https":
@@ -35,9 +38,9 @@ func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseC
 			return []string{
 				"",
 				codeString,
-				fmt.Sprintf("%vxx", codeString[0]),
+				fmt.Sprintf("%vxx", string(codeString[0])),
 				fmt.Sprintf("%v-%v", requestMethod, codeString),
-				fmt.Sprintf("%v-%vxx", requestMethod, codeString[0]),
+				fmt.Sprintf("%v-%vxx", requestMethod, string(codeString[0])),
 			}
 		}
 	default:
@@ -207,20 +210,20 @@ func (m *MetricInfo) GetMetricLoggerNames(name string, apiProtocol, requestMetho
 	switch m.Type {
 	case Categorical:
 		codes := MapValueToPossibleCodes(apiProtocol, requestMethod, responseCode)
-		names := make([]string, len(codes))
+		names := make([]string, 0, len(codes))
 		for _, code := range codes {
-			groupName := fmt.Sprintf(m.NameFormat, code)
+			groupName := strings.TrimSuffix(fmt.Sprintf(m.NameFormat, code), "-")
 			names = append(names, groupName)
 		}
 		return names
 	case Valued:
 		codes := MapValueToPossibleCodes(apiProtocol, requestMethod, responseCode)
-		names := make([]string, len(codes))
+		names := make([]string, 0, len(codes))
 		for _, code := range codes {
-			groupName := fmt.Sprintf(m.NameFormat, code)
+			groupName := strings.TrimSuffix(fmt.Sprintf(m.NameFormat, code), "-")
 			names = append(names, groupName)
 		}
-		return []string{name}
+		return names
 	default: // default is valued
 		return []string{name}
 	}
