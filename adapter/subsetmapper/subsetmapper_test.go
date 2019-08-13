@@ -6,12 +6,15 @@ import (
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/subsetmapper"
 	"github.com/stretchr/testify/assert"
-	"github.com/montanaflynn/stats"
+	"gopkg.in/yaml.v2"
 )
 
 func TestGenerateInstanceWithLogEntryTemplate(t *testing.T) {
-	valuesRaw = []float64{ 0.1, 0.2 , -0.3}
-	values := stats.LoadRawData(valuesRaw)
+	labels := []string{
+		"one",
+		"two",
+	}
+	namespace := "test-namespace"
 	instance := subsetmapper.GenerateInstanceWithLogEntryTemplate(labels, namespace)
 	assert.Equal(t, fmt.Sprintf("%v-%v", "vamplog", namespace), instance.Metadata["name"])
 	assert.Equal(t, "istio-system", instance.Metadata["namespace"])
