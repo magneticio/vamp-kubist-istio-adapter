@@ -145,7 +145,7 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
 				logInstance.Destination = v.GetStringValue()
 			} else if k == "responseCode" {
 				logInstance.Values[k] = v.GetInt64Value()
-			} else if k == "requestDuration" {
+			} else if k == "responseDuration" {
 				logInstance.Values[k] = v.GetDurationValue()
 			} else if k == "destinationPort" {
 				logInstance.Values[k] = v.GetInt64Value()
