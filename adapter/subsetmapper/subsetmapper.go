@@ -158,11 +158,11 @@ spec:
 // GenerateInstanceWithLogEntryTemplate generate instance template with given labels and namespace
 func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *models.Instance {
 	variables := map[string]string{
-		"source":                 "source.labels[\"app\"] | source.workload.name | \"unknown\"",
-		"user":                   "source.user | \"unknown\"",
-		"destinationName":        "destination.name | \"unknown\"",
-		"destinationServiceName": "destination.service.name | \"unknown\"",
-		"destinationNamespace":   "destination.namespace | \"unknown\"",
+		"source":                 "source.labels[\"app\"] | source.workload.name | \"\"",
+		"user":                   "source.user | \"\"",
+		"destinationName":        "destination.name | \"\"",
+		"destinationServiceName": "destination.service.name | \"\"",
+		"destinationNamespace":   "destination.namespace | \"\"",
 		"destinationPort":        "destination.port | 0",
 		"responseCode":           "response.code | 0",
 		"apiProtocol":            "api.Protocol | \"\"", // http, https, or grpc
@@ -176,7 +176,7 @@ func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *mo
 	labelPrefix := "label"
 	for _, label := range labels {
 		key := fmt.Sprintf("%s_%s", labelPrefix, label)
-		variables[key] = fmt.Sprintf("destination.labels[\"%s\"] | \"unknown\"", label)
+		variables[key] = fmt.Sprintf("destination.labels[\"%s\"] | \"\"", label)
 	}
 
 	params := models.InstanceParams{
