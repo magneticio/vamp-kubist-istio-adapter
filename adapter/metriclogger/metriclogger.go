@@ -16,9 +16,9 @@ import (
 const DefaultRefreshPeriod = 30 * time.Second
 
 var MetricDefinitions = map[string]MetricInfo{
-	"requestDuration": MetricInfo{
+	"responseDuration": MetricInfo{
 		Type:       Valued,
-		NameFormat: "requestDuration-%v",
+		NameFormat: "responseDuration-%v",
 	},
 	"responseCode": MetricInfo{
 		Type:       Categorical,
@@ -67,9 +67,11 @@ func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseC
 
 // MetricLoggerGroupMap returns map of metric logger groups
 var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
-	"requestDuration":  NewMetricLoggerGroup("requestDuration", Valued),
-	"responseCode-200": NewMetricLoggerGroup("responseCode-200", Categorical),
-	"responseCode-500": NewMetricLoggerGroup("responseCode-500", Categorical),
+	"responseDuration":     NewMetricLoggerGroup("responseDuration", Valued),
+	"responseDuration-200": NewMetricLoggerGroup("responseDuration-200", Valued),
+	"responseCode-200":     NewMetricLoggerGroup("responseCode-200", Categorical),
+	"responseCode-2xx":     NewMetricLoggerGroup("responseCode-2xx", Categorical),
+	"responseCode-500":     NewMetricLoggerGroup("responseCode-500", Categorical),
 }
 
 // MetricType represent enum type of Valued or Categorical metrics
