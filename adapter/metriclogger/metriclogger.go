@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	types "github.com/gogo/protobuf/types"
 	"github.com/magneticio/vampkubistcli/logging"
 	"github.com/montanaflynn/stats"
 )
@@ -213,6 +214,8 @@ func ConvertToFloat64(i interface{}) float64 {
 		}
 	case time.Duration:
 		return float64(v.Nanoseconds()) / float64(1e6) // convert to milliseconds
+	case types.Duration:
+		return float64(v.Seconds)*float64(1e3) + float64(v.Nanos)/float64(1e6) // convert to milliseconds
 	default:
 		fmt.Printf("unknown type type %T!\n", v)
 	}
