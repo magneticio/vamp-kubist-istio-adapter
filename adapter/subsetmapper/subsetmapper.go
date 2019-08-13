@@ -116,14 +116,20 @@ func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInf
 			}
 		}
 		labelsMapString := sb.String()
-		logging.Info("labelsMapString: __%v__\n", labelsMapString)
+		// logging.Info("labelsMapString: __%v__\n", labelsMapString)
 		if destination != "" {
-			destinationData := destinationsSubsetsMap.DestinationsMap[destination]
-			subsetData := destinationData.Map[labelsMapString]
+			destinationData, existDestination := destinationsSubsetsMap.DestinationsMap[destination]
+			if !existDestination {
+				continue
+			}
+			subsetData, existSubset := destinationData.Map[labelsMapString]
+			if !existSubset {
+				continue
+			}
 			subsetName := subsetData.Subset
 			subsetPorts := subsetData.Ports
-			logging.Info("destinationData.Map: __%v__\n", destinationData.Map)
-			logging.Info("Subset Ports d( %v ) s( %v ) p( %v )\n", destination, subsetName, subsetPorts)
+			// logging.Info("destinationData.Map: __%v__\n", destinationData.Map)
+			// logging.Info("Subset Ports d( %v ) s( %v ) p( %v )\n", destination, subsetName, subsetPorts)
 			subsetWithPorts := clientmodels.SubsetToPorts{
 				Subset: subsetName,
 				Ports:  subsetPorts,
@@ -134,9 +140,13 @@ func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInf
 			})
 		} else {
 			for destinationName, destinationMap := range destinationsSubsetsMap.DestinationsMap {
-				subsetName := destinationMap.Map[labelsMapString].Subset
-				subsetPorts := destinationMap.Map[labelsMapString].Ports
-				logging.Info("D Subset Ports %v\n", subsetPorts)
+				subsetData, existSubset := destinationMap.Map[labelsMapString]
+				if !existSubset {
+					continue
+				}
+				subsetName := subsetData.Subset
+				subsetPorts := subsetData.Ports
+				// logging.Info("D Subset Ports %v\n", subsetPorts)
 				subsetWithPorts := clientmodels.SubsetToPorts{
 					Subset: subsetName,
 					Ports:  subsetPorts,

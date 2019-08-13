@@ -94,11 +94,11 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	for metricName, metricValue := range logInstance.Values {
 		if metricInfo, existInMetricDefinitions := metriclogger.MetricDefinitions[metricName]; existInMetricDefinitions {
 			groupNames := metricInfo.GetMetricLoggerNames(metricName, apiProtocol, requestMethod, responseCode, metricValue)
-			logging.Info("Group Names for %v, %v, %v, %v, %v\n", metricName, apiProtocol, requestMethod, responseCode, metricValue)
+			// logging.Info("Group Names for %v, %v, %v, %v, %v\n", metricName, apiProtocol, requestMethod, responseCode, metricValue)
 			for _, groupName := range groupNames {
 				if metricLoggerGroup, existInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; existInGroupMap {
 					for _, subsetInfo := range subsets {
-						logging.Info("Subset info: %v\n", subsetInfo)
+						// logging.Info("Subset info: %v\n", subsetInfo)
 						if len(subsetInfo.SubsetWithPorts.Ports) > 0 {
 							for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
 								if port != "" {
