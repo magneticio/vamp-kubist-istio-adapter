@@ -32,6 +32,20 @@ func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseC
 	apiProtocol = strings.ToLower(apiProtocol)
 	requestMethod = strings.ToLower(requestMethod)
 	codeString := fmt.Sprintf("%v", responseCode) // this can be int
+
+	if apiProtocol == "" && requestMethod != "" {
+		methods := map[string]bool{
+			"get":    true,
+			"put":    true,
+			"post":   true,
+			"head":   true,
+			"delete": true,
+			"option": true,
+		}
+		if methods[requestMethod] {
+			apiProtocol = "http"
+		}
+	}
 	switch apiProtocol {
 	case "http", "https":
 		if len(codeString) > 0 {
