@@ -10,6 +10,7 @@ import (
 	"time"
 
 	types "github.com/gogo/protobuf/types"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vampkubistcli/logging"
 	"github.com/montanaflynn/stats"
 )
@@ -121,21 +122,6 @@ type MetricValues struct {
 	StartTime int64
 	EndTime   int64
 	Values    map[int64][]float64
-}
-
-type MetricStats struct {
-	NumberOfElements  int64
-	Average           float64
-	StandardDeviation float64
-	Sum               float64
-	Median            float64
-	Min               float64
-	Max               float64
-	Rate              float64
-	P999              float64
-	P99               float64
-	P95               float64
-	P75               float64
 }
 
 func Setup() {
@@ -341,7 +327,18 @@ func (m *MetricLogger) ProcessValuedMetricLogger(metricValues *MetricValues) err
 	for _, v := range metricValues.Values {
 		allValues = append(allValues, v...)
 	}
-	CalculateMetricStatsAndSend(allValues)
+	metricStats, metricStatsError := CalculateMetricStats(allValues)
+	if metricStatsError != nil {
+		return metricStatsError
+	}
+	logging.Info("Metrics should be sent now: %v\n", metricStats)
+	// go sendMetric( ... )
+	/*
+		sendMetricStatsError := SendMetricStats(metricStats)
+		if sendMetricStatsError != nil {
+			return sendMetricStatsError
+		}
+	*/
 	return nil
 }
 
@@ -358,18 +355,30 @@ func (m *MetricLogger) ProcessCategoricalMetricLogger(metricValues *MetricValues
 			timeSeriesAsAvg[index] = avg
 		}
 	}
-	CalculateMetricStatsAndSend(timeSeriesAsAvg)
+	metricStats, metricStatsError := CalculateMetricStats(timeSeriesAsAvg)
+	if metricStatsError != nil {
+		return metricStatsError
+	}
+
+	logging.Info("Metrics should be sent now: %v\n", metricStats)
+	// go sendMetric( ... )
+	/*
+		sendMetricStatsError := SendMetricStats(metricStats)
+		if sendMetricStatsError != nil {
+			return sendMetricStatsError
+		}
+	*/
 
 	return nil
 }
 
-// CalculateMetricStatsAndSend does what its name says
-func CalculateMetricStatsAndSend(valuesRaw []float64) (*MetricStats, error) {
+// CalculateMetricStats does what its name says
+func CalculateMetricStats(valuesRaw []float64) (*models.MetricStats, error) {
 	// Calculate metrics and send it to vamp api
 
 	values := stats.LoadRawData(valuesRaw)
 	// NumberOfElements
-	metricStats := &MetricStats{
+	metricStats := &models.MetricStats{
 		NumberOfElements: int64(values.Len()),
 	}
 
@@ -450,8 +459,6 @@ func CalculateMetricStatsAndSend(valuesRaw []float64) (*MetricStats, error) {
 		logging.Error("Calculation Error: %v\n", calculationErr)
 	}
 
-	logging.Info("Metrics should be sent now: %v\n", metricStats)
-	// go sendMetric( ... )
 	return metricStats, nil
 }
 
