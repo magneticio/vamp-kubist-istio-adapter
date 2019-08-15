@@ -149,7 +149,7 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
 				logInstance.Values[k] = v.GetDurationValue().GetValue()
 			} else if k == "destinationPort" {
 				logInstance.Values[k] = v.GetInt64Value()
-				logInstance.DestinationPort = v.GetStringValue()
+				logInstance.DestinationPort = fmt.Sprintf("%v", v.GetInt64Value())
 			} else if k == "apiProtocol" {
 				logInstance.Values[k] = v.GetStringValue()
 			} else if k == "requestMethod" {
