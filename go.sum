@@ -152,6 +152,7 @@ github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/
 github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXiIaQGbYVAs8BPL6v8lEs=
 github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
 github.com/google/uuid v0.0.0-20161128191214-064e2069ce9c/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/gax-go v2.0.0+incompatible/go.mod h1:SFVmujtThgffbyetf+mdk2eWhX2bMyUtNHzFKcPA9HY=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
@@ -245,6 +246,7 @@ github.com/lukechampine/freeze v0.0.0-20160818180733-f514e08ae5a0/go.mod h1:kHf6
 github.com/lyft/protoc-gen-star v0.4.10/go.mod h1:mE8fbna26u7aEA2QCVvvfBU/ZrPgocG1206xAFPcs94=
 github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDePerRcY=
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
+github.com/magneticio/forklift v0.1.15 h1:inB8pobUzEsE1a7LEYIrQAI8jbluxu6YmTg0GGO9YzY=
 github.com/magneticio/forklift v0.1.15/go.mod h1:Epb+vpSn9uzzt4hr88W09/LghuYhCXj9eLiZXKrzgB4=
 github.com/magneticio/vampkubistcli v0.0.33 h1:bPLzDRXXDbHX8hhI7IUCwxpTF6dXhaEtMya0LVWTfzE=
 github.com/magneticio/vampkubistcli v0.0.33/go.mod h1:Re71vsnK40x5QTTtSz2P8SrYDwRrIzQ1KYxY72fhmFM=
@@ -264,6 +266,8 @@ github.com/magneticio/vampkubistcli v0.0.42 h1:lwuZ0c3ExCs/6DJvJZn4npKzuGDJb41P5
 github.com/magneticio/vampkubistcli v0.0.42/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
 github.com/magneticio/vampkubistcli v0.0.44 h1:twPQ+Bc/dIizuN270mr/iV7dmHQMcJwq2B4bLax/6BA=
 github.com/magneticio/vampkubistcli v0.0.44/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
+github.com/magneticio/vampkubistcli v0.0.47 h1:sZORpHREkbZ0dMMSFCMAOyzAR4Lgi0rfMwZn1A/oDuY=
+github.com/magneticio/vampkubistcli v0.0.47/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
 github.com/mattn/go-colorable v0.0.0-20170327083344-ded68f7a9561/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=

@@ -77,3 +77,18 @@ type InstanceParams struct {
 	Timestamp string            `yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
 	Variables map[string]string `yaml:"variables,omitempty" json:"variables,omitempty"`
 }
+
+type MetricStats struct {
+	NumberOfElements  int64
+	Average           float64
+	StandardDeviation float64
+	Sum               float64
+	Median            float64
+	Min               float64
+	Max               float64
+	Rate              float64
+	P999              float64
+	P99               float64
+	P95               float64
+	P75               float64
+}

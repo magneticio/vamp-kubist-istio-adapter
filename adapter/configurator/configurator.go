@@ -134,3 +134,46 @@ func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) erro
 	}
 	return nil
 }
+
+// SendMetricStats send metrics to vamp api
+func SendMetricStats(metricName string,
+	destination string,
+	port string,
+	subset string,
+	experiment string,
+	metricStats *models.MetricStats) error {
+	restClient, restCLientError := vampclientprovider.GetRestClient()
+	if restCLientError != nil {
+		return errors.New("Rest Client can not be initiliazed")
+	}
+	values := make(map[string]string)
+	values["project"] = vampclientprovider.Project
+	values["cluster"] = vampclientprovider.Cluster
+	values["virtual_cluster"] = vampclientprovider.VirtualCluster
+	values["destination"] = destination
+	values["experiment"] = experiment
+	values["port"] = port
+	values["subset"] = subset
+	metricValue := &clientmodels.MetricValue{
+		Timestamp:         time.Now().Unix(),
+		NumberOfElements:  metricStats.NumberOfElements,
+		StandardDeviation: metricStats.StandardDeviation,
+		Average:           metricStats.Average,
+		Sum:               metricStats.Average,
+		Mediam:            metricStats.Median,
+		Min:               metricStats.Min,
+		Max:               metricStats.Max,
+		Rate:              metricStats.Rate,
+		P999:              metricStats.P999,
+		P99:               metricStats.P99,
+		P95:               metricStats.P95,
+		P75:               metricStats.P75,
+	}
+	_, pushMetricValueError := restClient.PushMetricValue(metricName, metricValue, values)
+	if pushMetricValueError != nil {
+		logging.Error("Push Metric Value Error: %v\n", pushMetricValueError)
+	}
+	logging.Info("Metric sent.\n")
+
+	return nil
+}
