@@ -104,6 +104,8 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 								if port != "" {
 									if string(portWith) == port {
 										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
+									} else {
+										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, string(portWith), subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 									}
 								} else {
 									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
