@@ -6,9 +6,9 @@ import (
 	"math"
 	"net/http"
 	"regexp"
+	"strconv"
 	"sync/atomic"
 	"time"
-	"strconv"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
 	metriclogger "github.com/magneticio/vamp-kubist-istio-adapter/adapter/metriclogger"
@@ -104,11 +104,15 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 							for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
 								if port != "" {
 									// Service port and service target port should be handled.
-									// LogInstance has the
+									// LogInstance has one destination port where destination is a container
+									// port is expected to be the target port not the service port
+									// A map of service port to target port mapping
 									if strconv.Itoa(portWith) == port {
 										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 									} else {
-										logging.Info("Ports: %v - %v\n", portWith ,  port) 
+										// TODO: test with different service port and container port case
+										// Read the comments above
+										logging.Info("Ports: %v - %v\n", portWith, port)
 										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, strconv.Itoa(portWith), subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 									}
 								} else {

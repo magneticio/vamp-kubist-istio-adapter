@@ -145,8 +145,6 @@ func NewMetricLoggerGroup(metricName string, metricType MetricType) *MetricLogge
 
 func (g *MetricLoggerGroup) GetMetricLogger(destination string, port string, subset string) *MetricLogger {
 	key := fmt.Sprintf("%v:%v/%v", destination, port, subset)
-	fmt.Printf("MetricLogger key: %v\n", key)
-	logging.Info("MetricLogger key: %v\n", key)
 	if _, ok := g.MetricLoggers[key]; !ok {
 		g.MetricLoggers[key] = NewMetricLogger(destination, port, subset, g.Name, g.MetricType, DefaultRefreshPeriod)
 	}
