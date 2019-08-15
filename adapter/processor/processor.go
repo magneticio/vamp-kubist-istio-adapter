@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"sync/atomic"
 	"time"
+	"strconv"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
 	metriclogger "github.com/magneticio/vamp-kubist-istio-adapter/adapter/metriclogger"
@@ -102,10 +103,13 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 						if len(subsetInfo.SubsetWithPorts.Ports) > 0 {
 							for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
 								if port != "" {
-									if string(portWith) == port {
+									// Service port and service target port should be handled.
+									// LogInstance has the
+									if strconv.Itoa(portWith) == port {
 										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 									} else {
-										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, string(portWith), subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
+										logging.Info("Ports: %v - %v\n", portWith ,  port) 
+										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, strconv.Itoa(portWith), subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 									}
 								} else {
 									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
