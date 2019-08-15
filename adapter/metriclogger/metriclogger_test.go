@@ -39,7 +39,7 @@ func TestGetMetricLoggerNames(t *testing.T) {
 
 func TestCalculateMetricStatsAndSend(t *testing.T) {
 	valuesRaw := []float64{0.1, 0.2, -0.3}
-	metricStats, _ := metriclogger.CalculateMetricStatsAndSend(valuesRaw)
+	metricStats, _ := metriclogger.CalculateMetricStats(valuesRaw)
 	fmt.Printf("MetricStats: %v\n", metricStats)
 	assert.Equal(t, int64(3), metricStats.NumberOfElements)
 }

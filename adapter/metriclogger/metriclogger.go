@@ -10,8 +10,8 @@ import (
 	"time"
 
 	types "github.com/gogo/protobuf/types"
-	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vampkubistcli/logging"
 	"github.com/montanaflynn/stats"
 )
@@ -334,17 +334,17 @@ func (m *MetricLogger) ProcessValuedMetricLogger(metricValues *MetricValues) err
 	}
 	logging.Info("Metrics should be sent now: %v\n", metricStats)
 	// go sendMetric( ... )
-	
-		sendMetricStatsError := configurator.SendMetricStats(
-			m.Name,
-			m.Destination,
-			m.Port,
-			m.Subset,
-			"", // no experiment here
-			metricStats)
-		if sendMetricStatsError != nil {
-			return sendMetricStatsError
-		}
+
+	sendMetricStatsError := configurator.SendMetricStats(
+		m.Name,
+		m.Destination,
+		m.Port,
+		m.Subset,
+		"", // no experiment here
+		metricStats)
+	if sendMetricStatsError != nil {
+		return sendMetricStatsError
+	}
 	return nil
 }
 
