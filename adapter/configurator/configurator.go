@@ -125,12 +125,15 @@ func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) erro
 				StandardDeviation: subsetStat.StandardDeviation,
 				Average:           subsetStat.Average,
 			}
-			sendExperimentError := restClient.SendExperimentMetric(experimentName, subsetName, metric, values)
-			if sendExperimentError != nil {
-				logging.Error("SendExperimentError: %v\n", sendExperimentError)
-			} else {
-				logging.Info("Results sent.\n")
-			}
+			logging.Info("Sending Experiment metrics is not implemented yet: %v/%v => %v\n", experimentName, subsetName, metric)
+			/*
+				sendExperimentError := restClient.SendExperimentMetric(experimentName, subsetName, metric, values)
+				if sendExperimentError != nil {
+					logging.Error("SendExperimentError: %v\n", sendExperimentError)
+				} else {
+					logging.Info("Results sent.\n")
+				}
+			*/
 		}
 	}
 	return nil
