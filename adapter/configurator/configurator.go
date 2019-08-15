@@ -128,8 +128,9 @@ func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) erro
 			sendExperimentError := restClient.SendExperimentMetric(experimentName, subsetName, metric, values)
 			if sendExperimentError != nil {
 				logging.Error("SendExperimentError: %v\n", sendExperimentError)
+			} else {
+				logging.Info("Results sent.\n")
 			}
-			logging.Info("Results sent.\n")
 		}
 	}
 	return nil
@@ -160,7 +161,7 @@ func SendMetricStats(metricName string,
 		StandardDeviation: metricStats.StandardDeviation,
 		Average:           metricStats.Average,
 		Sum:               metricStats.Average,
-		Mediam:            metricStats.Median,
+		Median:            metricStats.Median,
 		Min:               metricStats.Min,
 		Max:               metricStats.Max,
 		Rate:              metricStats.Rate,
@@ -172,6 +173,7 @@ func SendMetricStats(metricName string,
 	_, pushMetricValueError := restClient.PushMetricValue(metricName, metricValue, values)
 	if pushMetricValueError != nil {
 		logging.Error("Push Metric Value Error: %v\n", pushMetricValueError)
+		return pushMetricValueError
 	}
 	logging.Info("Metric sent.\n")
 
