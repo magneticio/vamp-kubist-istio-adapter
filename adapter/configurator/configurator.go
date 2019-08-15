@@ -108,10 +108,12 @@ func SetupConfigurator() {
 }
 
 func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) error {
-	restClient, restCLientError := vampclientprovider.GetRestClient()
-	if restCLientError != nil {
-		return errors.New("Rest Client can not be initiliazed")
-	}
+	/*
+		restClient, restCLientError := vampclientprovider.GetRestClient()
+		if restCLientError != nil {
+			return errors.New("Rest Client can not be initiliazed")
+		}
+	*/
 	values := make(map[string]string)
 	values["project"] = vampclientprovider.Project
 	values["cluster"] = vampclientprovider.Cluster
