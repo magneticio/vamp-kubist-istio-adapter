@@ -240,8 +240,6 @@ github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDe
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/magneticio/forklift v0.1.15 h1:inB8pobUzEsE1a7LEYIrQAI8jbluxu6YmTg0GGO9YzY=
 github.com/magneticio/forklift v0.1.15/go.mod h1:Epb+vpSn9uzzt4hr88W09/LghuYhCXj9eLiZXKrzgB4=
-github.com/magneticio/vampkubistcli v0.0.47 h1:sZORpHREkbZ0dMMSFCMAOyzAR4Lgi0rfMwZn1A/oDuY=
-github.com/magneticio/vampkubistcli v0.0.47/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
 github.com/magneticio/vampkubistcli v0.0.48 h1:fyU4k0EU7p1H8FVpWLt79487rAHXwZbvCe3dhkj8yRY=
 github.com/magneticio/vampkubistcli v0.0.48/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
@@ -444,6 +442,7 @@ golang.org/x/tools v0.0.0-20190312170243-e65039ee4138/go.mod h1:LCzVGOaR6xXOjkQ3
 golang.org/x/tools v0.0.0-20190328211700-ab21143f2384/go.mod h1:LCzVGOaR6xXOjkQ3onu1FJEFr0SW1gC7cKk1uF8kGRs=
 google.golang.org/api v0.3.1/go.mod h1:6wY9I6uQWHQ8EM57III9mq/AjF+i8G65rmVagqKMtkk=
 google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
+google.golang.org/appengine v1.4.0 h1:/wp5JvzpHIxhs/dumFmF7BXTf3Z+dd4uXta4kVyO508=
 google.golang.org/appengine v1.4.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
 google.golang.org/genproto v0.0.0-20180817151627-c66870c02cf8/go.mod h1:JiN7NxoALGmiZfu7CAH4rXhgtRTLTxftemlI0sWmxmc=
 google.golang.org/genproto v0.0.0-20180831171423-11092d34479b/go.mod h1:JiN7NxoALGmiZfu7CAH4rXhgtRTLTxftemlI0sWmxmc=
