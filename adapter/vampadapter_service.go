@@ -31,7 +31,8 @@ import (
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/config"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/processor"
-	"github.com/magneticio/vampkubistcli/kubernetes"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
+	kubernetes "github.com/magneticio/vampkubistcli/kubernetes"
 	"istio.io/api/mixer/adapter/model/v1beta1"
 	policy "istio.io/api/policy/v1beta1"
 	"istio.io/istio/mixer/template/logentry"
@@ -97,7 +98,10 @@ func (s *VampAdapter) HandleLogEntry(ctx context.Context, r *logentry.HandleLogE
 
 // ProcessK8sMetrics reads metrics from K8s metric server and send them to adapter's processor
 func (s *VampAdapter) ProcessK8sMetrics() error {
-	metrics := kubernetes.GetAverageMetrics("", vampclientprovider.VirtualCluster)
+	metrics, err := kubernetes.GetAverageMetrics("", vampclientprovider.VirtualCluster)
+	if err != nil {
+		return err
+	}
 	for i := 0; i < len(metrics); i++ {
 		logInstance := &models.LogInstance{
 			Timestamp:         time.Now().Unix(),
@@ -106,6 +110,7 @@ func (s *VampAdapter) ProcessK8sMetrics() error {
 		}
 		processor.LogInstanceChannel <- logInstance
 	}
+	return nil
 }
 
 func decodeDimensions(in map[string]*policy.Value) map[string]interface{} {
