@@ -312,17 +312,20 @@ func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering() *Me
 // RefreshMetricLogger trigger process and cleanup of metric buckets
 func (m *MetricLogger) RefreshMetricLogger() error {
 	logging.Info(">>>>>> Process and Clean Metriclogger Values for %v\n", m.Name)
+
+	id := atomic.LoadInt32(&m.ActiveID)
+	// TODO: review this logic of calculating next active id
+	nextID := (int(id) + 1) % len(m.ValueMaps)
+	m.ValueMaps[nextID] = make(map[int64][]float64, 0)
+	atomic.StoreInt32(&m.ActiveID, int32(nextID))
+
 	metricValues := m.MergeValuesOfNonActiveBucketsWithTimeBasedFiltering()
 	processError := m.ProcessMetricLogger(metricValues)
 	if processError != nil {
 		logging.Error("Error in Refresh Metric Logger: %v\n", processError)
 		return processError
 	}
-	id := atomic.LoadInt32(&m.ActiveID)
-	// TODO: review this logic of calculating next active id
-	nextID := (int(id) + 1) % len(m.ValueMaps)
-	m.ValueMaps[nextID] = make(map[int64][]float64, 0)
-	atomic.StoreInt32(&m.ActiveID, int32(nextID))
+
 	return nil
 }
 
