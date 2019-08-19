@@ -142,6 +142,9 @@ func ProcessInstanceForExperiments(
 			logging.Error("URL conversion to string failed\n")
 			return // string conversion problem
 		}
+	} else {
+		logging.Error("No url in the instance\n")
+		return // no url
 	}
 	header := http.Header{}
 	if cookies, ok := logInstance.Values["cookies"]; ok {
@@ -152,6 +155,7 @@ func ProcessInstanceForExperiments(
 			return // string conversion problem
 		}
 	} else {
+		logging.Error("No cookie in the instance\n")
 		return // no cookie
 	}
 	// TODO: url can be added to request like cookies
@@ -160,8 +164,8 @@ func ProcessInstanceForExperiments(
 	}
 	experimentLogger := GetExperimentLoggers()
 	for _, cookie := range request.Cookies() {
+		logging.Info("Cookie: %v\n", cookie.Value)
 		if experimentConf, ok := experimentConfigurations.ExperimentConfigurationMap[cookie.Name]; ok {
-			// logging.Info("Cookie: %v\n", cookie.Value)
 			experimentName := cookie.Name
 			if targetPath, ok2 := experimentConf.Subsets[cookie.Value]; ok2 {
 				subsetName := cookie.Value

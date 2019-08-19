@@ -22,7 +22,7 @@ func TestMapValueToPossibleCodes(t *testing.T) {
 	apiProtocol := "http"
 	requestMethod := "get"
 	responseCode := "200"
-	expectedCodes := []string{"", "200", "2xx", "get-200", "get-2xx"}
+	expectedCodes := []string{"", "200", "2xx", "get_200", "get_2xx"}
 	codes := metriclogger.MapValueToPossibleCodes(apiProtocol, requestMethod, responseCode)
 	fmt.Printf("codes: %v\n", codes)
 	assert.Equal(t, expectedCodes, codes)
@@ -30,7 +30,7 @@ func TestMapValueToPossibleCodes(t *testing.T) {
 
 func TestGetMetricLoggerNames(t *testing.T) {
 	metricInfo := metriclogger.MetricDefinitions["responseCode"]
-	expectedNames := []string{"responseCode", "responseCode-200", "responseCode-2xx", "responseCode-get-200", "responseCode-get-2xx"}
+	expectedNames := []string{"response_code", "response_code_200", "response_code_2xx", "response_code_get_200", "response_code_get_2xx"}
 	names := metricInfo.GetMetricLoggerNames("responseCode", "http", "get", "200", int64(200))
 	fmt.Printf("e names: %v\n", expectedNames)
 	fmt.Printf("names: %v\n", names)
