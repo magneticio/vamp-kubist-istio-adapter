@@ -3,6 +3,7 @@ package configurator
 import (
 	"encoding/json"
 	"errors"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -20,6 +21,8 @@ var ExperimentConfigurations1 models.ExperimentConfigurations
 var activeConfigurationID int32
 
 const RefreshPeriod = 30 * time.Second
+
+var Delimiter = url.QueryEscape("/")
 
 func GetExperimentConfigurations() *models.ExperimentConfigurations {
 	if atomic.LoadInt32(&activeConfigurationID) == 0 {
@@ -39,7 +42,7 @@ func ParseExperimentConfiguration(sourceAsJson string) (*models.ExperimentConfig
 		subsets := make(map[string]string)
 		for _, destination := range experiment.Specification.Destinations {
 			portString := strconv.FormatInt(destination.Port, 10)
-			key := destination.Destination + "/" + portString + "/" + destination.Subset
+			key := destination.Destination + Delimiter + portString + Delimiter + destination.Subset
 			subsets[key] = destination.Target
 		}
 		experimentConfigurationMap[experiment.Name] = models.ExperimentConfiguration{
@@ -128,7 +131,7 @@ func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) erro
 				Average:           subsetStat.Average,
 			}
 			values["experiment"] = experimentName
-			vars := strings.SplitN(subsetName, "/", 3)
+			vars := strings.SplitN(subsetName, Delimiter, 3)
 			if len(vars) < 3 {
 				logging.Error("Subset info name doesn't have enough knowlegde: %v\n", subsetName)
 				continue
