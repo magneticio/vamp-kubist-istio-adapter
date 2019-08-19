@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -108,34 +109,41 @@ func SetupConfigurator() {
 }
 
 func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) error {
-	/*
-		restClient, restCLientError := vampclientprovider.GetRestClient()
-		if restCLientError != nil {
-			return errors.New("Rest Client can not be initiliazed")
-		}
-	*/
+	restClient, restCLientError := vampclientprovider.GetRestClient()
+	if restCLientError != nil {
+		return errors.New("Rest Client can not be initiliazed")
+	}
 	values := make(map[string]string)
 	values["project"] = vampclientprovider.Project
 	values["cluster"] = vampclientprovider.Cluster
 	values["virtual_cluster"] = vampclientprovider.VirtualCluster
+	metricName := "target"
 
 	for experimentName, experimentStat := range experimentStatsGroup.ExperimentStatsMap {
 		for subsetName, subsetStat := range experimentStat.Subsets {
-			metric := &clientmodels.ExperimentMetric{
+			metricValue := &clientmodels.MetricValue{
 				Timestamp:         time.Now().Unix(),
 				NumberOfElements:  int64(subsetStat.NumberOfElements),
 				StandardDeviation: subsetStat.StandardDeviation,
 				Average:           subsetStat.Average,
 			}
-			logging.Info("Sending Experiment metrics is not implemented yet: %v/%v => %v\n", experimentName, subsetName, metric)
-			/*
-				sendExperimentError := restClient.SendExperimentMetric(experimentName, subsetName, metric, values)
-				if sendExperimentError != nil {
-					logging.Error("SendExperimentError: %v\n", sendExperimentError)
-				} else {
-					logging.Info("Results sent.\n")
-				}
-			*/
+			values["experiment"] = experimentName
+			vars := strings.SplitN(subsetName, "/", 3)
+			if len(vars) < 3 {
+				logging.Error("Subset info name doesn't have enough knowlegde: %v\n", subsetName)
+				continue
+			}
+			values["destination"] = vars[0]
+			values["port"] = vars[1]
+			values["subset"] = vars[2]
+
+			// logging.Info("Sending Experiment metrics is not implemented yet: %v/%v => %v\n", experimentName, subsetName, metric)
+			sendExperimentError := restClient.SendMetricValue(metricName, metricValue, values)
+			if sendExperimentError != nil {
+				logging.Error("SendExperimentError: %v\n", sendExperimentError)
+			} else {
+				logging.Info("Results sent.\n")
+			}
 		}
 	}
 	return nil
