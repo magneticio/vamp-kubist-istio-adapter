@@ -39,7 +39,7 @@ func ParseExperimentConfiguration(sourceAsJson string) (*models.ExperimentConfig
 		subsets := make(map[string]string)
 		for _, destination := range experiment.Specification.Destinations {
 			portString := strconv.FormatInt(destination.Port, 10)
-			key := destination.Destination + "-" + portString + "-" + destination.Subset
+			key := destination.Destination + "/" + portString + "/" + destination.Subset
 			subsets[key] = destination.Target
 		}
 		experimentConfigurationMap[experiment.Name] = models.ExperimentConfiguration{

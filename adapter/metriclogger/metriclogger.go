@@ -21,11 +21,11 @@ const DefaultRefreshPeriod = 30 * time.Second
 var MetricDefinitions = map[string]MetricInfo{
 	"responseDuration": MetricInfo{
 		Type:       Valued,
-		NameFormat: "responseDuration-%v",
+		NameFormat: "response_duration_%v",
 	},
 	"responseCode": MetricInfo{
 		Type:       Categorical,
-		NameFormat: "responseCode-%v",
+		NameFormat: "response_code_%v",
 	},
 }
 
@@ -56,8 +56,8 @@ func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseC
 				"",
 				codeString,
 				fmt.Sprintf("%vxx", string(codeString[0])),
-				fmt.Sprintf("%v-%v", requestMethod, codeString),
-				fmt.Sprintf("%v-%vxx", requestMethod, string(codeString[0])),
+				fmt.Sprintf("%v_%v", requestMethod, codeString),
+				fmt.Sprintf("%v_%vxx", requestMethod, string(codeString[0])),
 			}
 		}
 	default:
@@ -70,11 +70,18 @@ func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseC
 
 // MetricLoggerGroupMap returns map of metric logger groups
 var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
-	"responseDuration":     NewMetricLoggerGroup("responseDuration", Valued),
-	"responseDuration-200": NewMetricLoggerGroup("responseDuration-200", Valued),
-	"responseCode-200":     NewMetricLoggerGroup("responseCode-200", Categorical),
-	"responseCode-2xx":     NewMetricLoggerGroup("responseCode-2xx", Categorical),
-	"responseCode-500":     NewMetricLoggerGroup("responseCode-500", Categorical),
+	"response_duration":         NewMetricLoggerGroup("response_duration", Valued),
+	"response_duration_200":     NewMetricLoggerGroup("response_duration_200", Valued),
+	"response_duration_2xx":     NewMetricLoggerGroup("response_duration_2xx", Valued),
+	"response_duration_get_2xx": NewMetricLoggerGroup("response_duration_get_2xx", Valued),
+	"response_duration_500":     NewMetricLoggerGroup("response_duration_200", Valued),
+	"response_duration_5xx":     NewMetricLoggerGroup("response_duration_2xx", Valued),
+	"response_duration_get_5xx": NewMetricLoggerGroup("response_duration_get_2xx", Valued),
+	"response_code_200":         NewMetricLoggerGroup("response_code_200", Categorical),
+	"response_code_2xx":         NewMetricLoggerGroup("response_code_2xx", Categorical),
+	"response_code_get_2xx":     NewMetricLoggerGroup("response_code_get_2xx", Categorical),
+	"response_code_500":         NewMetricLoggerGroup("response_code_500", Categorical),
+	"response_code_5xx":         NewMetricLoggerGroup("response_code_5xx", Categorical),
 }
 
 // MetricType represent enum type of Valued or Categorical metrics
@@ -220,7 +227,7 @@ func (m *MetricInfo) GetMetricLoggerNames(name string, apiProtocol, requestMetho
 		codes := MapValueToPossibleCodes(apiProtocol, requestMethod, responseCode)
 		names := make([]string, 0, len(codes))
 		for _, code := range codes {
-			groupName := strings.TrimSuffix(fmt.Sprintf(m.NameFormat, code), "-")
+			groupName := strings.TrimSuffix(fmt.Sprintf(m.NameFormat, code), "_")
 			names = append(names, groupName)
 		}
 		return names
@@ -228,7 +235,7 @@ func (m *MetricInfo) GetMetricLoggerNames(name string, apiProtocol, requestMetho
 		codes := MapValueToPossibleCodes(apiProtocol, requestMethod, responseCode)
 		names := make([]string, 0, len(codes))
 		for _, code := range codes {
-			groupName := strings.TrimSuffix(fmt.Sprintf(m.NameFormat, code), "-")
+			groupName := strings.TrimSuffix(fmt.Sprintf(m.NameFormat, code), "_")
 			names = append(names, groupName)
 		}
 		return names
@@ -412,6 +419,11 @@ func CalculateMetricStats(valuesRaw []float64) (*models.MetricStats, error) {
 	} else {
 		logging.Error("Calculation Error: %v\n", calculationErr)
 	}
+
+	if metricStats.Sum == 0 {
+		return metricStats, nil
+	}
+	// TODO: Add more checks
 
 	// Median
 	if calculation, calculationErr := values.Median(); calculationErr == nil {
