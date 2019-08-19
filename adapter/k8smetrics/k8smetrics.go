@@ -1,11 +1,12 @@
 package k8smetrics
 
 import (
+	"time"
+
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
 	kubernetes "github.com/magneticio/vampkubistcli/kubernetes"
 	"github.com/magneticio/vampkubistcli/logging"
-	"time"
 )
 
 // MetricsReadPeriod is interval between metrics retrieval
@@ -36,6 +37,7 @@ func ProcessK8sMetrics(ch chan *models.LogInstance) error {
 // Setup setups periodic read of k8s metrics
 func Setup(ch chan *models.LogInstance) {
 	logging.Info("SetupConfigurator at %v Refresh period: %v\n", time.Now(), MetricsReadPeriod)
+	kubernetes.IsKubeClientInCluster = true
 	ProcessK8sMetrics(ch)
 	ticker := time.NewTicker(MetricsReadPeriod)
 	go func() {

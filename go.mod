@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/gogo/protobuf v1.2.1
-	github.com/magneticio/vampkubistcli v0.0.50
+	github.com/magneticio/vampkubistcli v0.0.51
 	github.com/mhausenblas/kubecuddler v0.0.0-20181012110128-5836f3e4e7d0
 	github.com/montanaflynn/stats v0.5.0
 	github.com/mxschmitt/golang-combinations v1.0.0
