@@ -27,6 +27,14 @@ var MetricDefinitions = map[string]MetricInfo{
 		Type:       Categorical,
 		NameFormat: "response_code_%v",
 	},
+	"Memory": MetricInfo{
+		Type:       Valued,
+		NameFormat: "memory",
+	},
+	"CPU": MetricInfo{
+		Type:       Valued,
+		NameFormat: "cpu",
+	},
 }
 
 // MapValueToPossibleCodes generates codes for possible variations of a metric
@@ -82,6 +90,8 @@ var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
 	"response_code_get_2xx":     NewMetricLoggerGroup("response_code_get_2xx", Categorical),
 	"response_code_500":         NewMetricLoggerGroup("response_code_500", Categorical),
 	"response_code_5xx":         NewMetricLoggerGroup("response_code_5xx", Categorical),
+	"memory":                    NewMetricLoggerGroup("memory", Valued),
+	"cpu":                       NewMetricLoggerGroup("cpu", Valued),
 }
 
 // MetricType represent enum type of Valued or Categorical metrics
@@ -339,7 +349,7 @@ func (m *MetricLogger) ProcessValuedMetricLogger(metricValues *MetricValues) err
 	if metricStatsError != nil {
 		return metricStatsError
 	}
-	logging.Info("Metrics should be sent now: %v\n", metricStats)
+	logging.Info("Metrics should be sent now: %v => %v\n", m.Name, metricStats)
 	// go sendMetric( ... )
 
 	sendMetricStatsError := configurator.SendMetricStats(
@@ -373,7 +383,7 @@ func (m *MetricLogger) ProcessCategoricalMetricLogger(metricValues *MetricValues
 		return metricStatsError
 	}
 
-	logging.Info("Metrics should be sent now: %v\n", metricStats)
+	logging.Info("Metrics should be sent now: %v => %v\n", m.Name, metricStats)
 	// go sendMetric( ... )
 	sendMetricStatsError := configurator.SendMetricStats(
 		m.Name,
