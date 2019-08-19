@@ -399,6 +399,10 @@ func CalculateMetricStats(valuesRaw []float64) (*models.MetricStats, error) {
 		NumberOfElements: int64(values.Len()),
 	}
 
+	if values.Len() == 0 {
+		return metricStats, nil
+	}
+
 	// Average
 	if calculation, calculationErr := values.Mean(); calculationErr == nil {
 		metricStats.Average = calculation
