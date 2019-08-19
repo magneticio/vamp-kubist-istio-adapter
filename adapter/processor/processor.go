@@ -68,7 +68,7 @@ func RunProcessor() {
 	configurator.SetupConfigurator()
 	subsetmapper.Setup()
 	metriclogger.Setup()
-	k8smetrics.Setup()
+	k8smetrics.Setup(LogInstanceChannel)
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel

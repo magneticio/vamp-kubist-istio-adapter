@@ -2,7 +2,6 @@ package k8smetrics
 
 import (
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
-	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/processor"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
 	kubernetes "github.com/magneticio/vampkubistcli/kubernetes"
 	"github.com/magneticio/vampkubistcli/logging"
@@ -13,7 +12,7 @@ import (
 const MetricsReadPeriod = 30 * time.Second
 
 // ProcessK8sMetrics reads metrics from K8s metric server and send them to adapter's processor
-func ProcessK8sMetrics() error {
+func ProcessK8sMetrics(ch chan *models.LogInstance) error {
 	metrics, err := kubernetes.GetSimpleMetrics("", vampclientprovider.VirtualCluster)
 	if err != nil {
 		logging.Error("Cannot read k8s metrics: %v", err)
@@ -28,22 +27,22 @@ func ProcessK8sMetrics() error {
 					"CPU":    metrics[i].ContainersMetrics[j].CPU,
 					"Memory": metrics[i].ContainersMetrics[j].Memory},
 			}
-			processor.LogInstanceChannel <- logInstance
+			ch <- logInstance
 		}
 	}
 	return nil
 }
 
 // Setup setups periodic read of k8s metrics
-func Setup() {
+func Setup(ch chan *models.LogInstance) {
 	logging.Info("SetupConfigurator at %v Refresh period: %v\n", time.Now(), MetricsReadPeriod)
-	ProcessK8sMetrics()
+	ProcessK8sMetrics(ch)
 	ticker := time.NewTicker(MetricsReadPeriod)
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				ProcessK8sMetrics()
+				ProcessK8sMetrics(ch)
 			}
 		}
 	}()
