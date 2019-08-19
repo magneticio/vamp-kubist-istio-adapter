@@ -101,19 +101,19 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 					for _, subsetInfo := range subsets {
 						// logging.Info("Subset info: %v\n", subsetInfo)
 						if len(subsetInfo.SubsetWithPorts.Ports) > 0 {
-							for _, portWith := range subsetInfo.SubsetWithPorts.Ports {
+							for _, destWithPorts := range subsetInfo.SubsetWithPorts.Ports {
 								if port != "" {
 									// Service port and service target port should be handled.
 									// LogInstance has one destination port where destination is a container
 									// port is expected to be the target port not the service port
 									// A map of service port to target port mapping
-									if strconv.Itoa(portWith) == port {
+									if strconv.Itoa(destWithPorts.TargetPort) == port {
 										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 									} else {
 										// TODO: test with different service port and container port case
 										// Read the comments above
-										logging.Info("Ports: %v - %v\n", portWith, port)
-										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, strconv.Itoa(portWith), subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
+										logging.Info("Ports: %v - %v\n", destWithPorts.Port, port)
+										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, strconv.Itoa(destWithPorts.Port), subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 									}
 								} else {
 									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)

@@ -242,6 +242,8 @@ github.com/magneticio/forklift v0.1.15 h1:inB8pobUzEsE1a7LEYIrQAI8jbluxu6YmTg0GG
 github.com/magneticio/forklift v0.1.15/go.mod h1:Epb+vpSn9uzzt4hr88W09/LghuYhCXj9eLiZXKrzgB4=
 github.com/magneticio/vampkubistcli v0.0.48 h1:fyU4k0EU7p1H8FVpWLt79487rAHXwZbvCe3dhkj8yRY=
 github.com/magneticio/vampkubistcli v0.0.48/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
+github.com/magneticio/vampkubistcli v0.0.49 h1:NNtLsu3hda/ld90y8pApOi8rWKBSDKqFx9+NL98wvtg=
+github.com/magneticio/vampkubistcli v0.0.49/go.mod h1:T7S3bfsaP+v/2o/+YETQV75dmgOK7czADrj/Shxd2Ng=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
