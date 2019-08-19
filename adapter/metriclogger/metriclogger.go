@@ -210,6 +210,14 @@ func ConvertToFloat64(i interface{}) float64 {
 	switch v := i.(type) {
 	case int:
 		return float64(v)
+	case int32:
+		return float64(v)
+	case int64:
+		return float64(v)
+	case float32:
+		return float64(v)
+	case float64:
+		return v
 	case string:
 		if s, err := strconv.ParseFloat(v, 64); err == nil {
 			return s
