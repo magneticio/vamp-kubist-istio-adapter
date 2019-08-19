@@ -37,6 +37,15 @@ func TestGetMetricLoggerNames(t *testing.T) {
 	assert.Equal(t, expectedNames, names)
 }
 
+func TestGetMetricLoggerNames2(t *testing.T) {
+	metricInfo := metriclogger.MetricDefinitions["Memory"]
+	expectedNames := []string{"memory"}
+	names := metricInfo.GetMetricLoggerNames("Memory", "", "", "", float64(312.456))
+	fmt.Printf("e names: %v\n", expectedNames)
+	fmt.Printf("names: %v\n", names)
+	assert.Equal(t, expectedNames, names)
+}
+
 func TestCalculateMetricStatsAndSend(t *testing.T) {
 	valuesRaw := []float64{0.1, 0.2, -0.3}
 	metricStats, _ := metriclogger.CalculateMetricStats(valuesRaw)

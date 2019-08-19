@@ -29,11 +29,11 @@ var MetricDefinitions = map[string]MetricInfo{
 	},
 	"Memory": MetricInfo{
 		Type:       Valued,
-		NameFormat: "memory",
+		NameFormat: "memory_%v",
 	},
 	"CPU": MetricInfo{
 		Type:       Valued,
-		NameFormat: "cpu",
+		NameFormat: "cpu_%v",
 	},
 }
 
@@ -69,9 +69,9 @@ func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseC
 			}
 		}
 	default:
-		return []string{codeString}
+		return []string{""}
 	}
-	return []string{codeString}
+	return []string{""}
 }
 
 // TODO: Populate this map automatically
@@ -82,9 +82,9 @@ var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
 	"response_duration_200":     NewMetricLoggerGroup("response_duration_200", Valued),
 	"response_duration_2xx":     NewMetricLoggerGroup("response_duration_2xx", Valued),
 	"response_duration_get_2xx": NewMetricLoggerGroup("response_duration_get_2xx", Valued),
-	"response_duration_500":     NewMetricLoggerGroup("response_duration_200", Valued),
-	"response_duration_5xx":     NewMetricLoggerGroup("response_duration_2xx", Valued),
-	"response_duration_get_5xx": NewMetricLoggerGroup("response_duration_get_2xx", Valued),
+	"response_duration_500":     NewMetricLoggerGroup("response_duration_500", Valued),
+	"response_duration_5xx":     NewMetricLoggerGroup("response_duration_5xx", Valued),
+	"response_duration_get_5xx": NewMetricLoggerGroup("response_duration_get_5xx", Valued),
 	"response_code_200":         NewMetricLoggerGroup("response_code_200", Categorical),
 	"response_code_2xx":         NewMetricLoggerGroup("response_code_2xx", Categorical),
 	"response_code_get_2xx":     NewMetricLoggerGroup("response_code_get_2xx", Categorical),
@@ -284,9 +284,8 @@ func (m *MetricLogger) Push(timestamp int64, value interface{}) {
 }
 
 // MergeValuesOfNonActiveBucketsWithTimeBasedFiltering merges values in unused buckets
-func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering() *MetricValues {
+func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering(now int64) *MetricValues {
 	id := atomic.LoadInt32(&m.ActiveID)
-	now := time.Now().Unix()
 	timeStart := now - int64(m.RefreshPeriod.Seconds())
 	mergedValueMap := make(map[int64][]float64, 0)
 	for index, valueMap := range m.ValueMaps {
@@ -312,20 +311,18 @@ func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering() *Me
 // RefreshMetricLogger trigger process and cleanup of metric buckets
 func (m *MetricLogger) RefreshMetricLogger() error {
 	logging.Info(">>>>>> Process and Clean Metriclogger Values for %v\n", m.Name)
-
 	id := atomic.LoadInt32(&m.ActiveID)
 	// TODO: review this logic of calculating next active id
 	nextID := (int(id) + 1) % len(m.ValueMaps)
 	m.ValueMaps[nextID] = make(map[int64][]float64, 0)
+	now := time.Now().Unix()
 	atomic.StoreInt32(&m.ActiveID, int32(nextID))
-
-	metricValues := m.MergeValuesOfNonActiveBucketsWithTimeBasedFiltering()
+	metricValues := m.MergeValuesOfNonActiveBucketsWithTimeBasedFiltering(now)
 	processError := m.ProcessMetricLogger(metricValues)
 	if processError != nil {
 		logging.Error("Error in Refresh Metric Logger: %v\n", processError)
 		return processError
 	}
-
 	return nil
 }
 
