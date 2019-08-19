@@ -140,7 +140,7 @@ func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) erro
 			values["port"] = vars[1]
 			values["subset"] = vars[2]
 
-			// logging.Info("Sending Experiment metrics is not implemented yet: %v/%v => %v\n", experimentName, subsetName, metric)
+			logging.Info("Sending Experiment metrics: %v/%v => %v\n", experimentName, subsetName, metricValue)
 			_, sendExperimentError := restClient.PushMetricValue(metricName, metricValue, values)
 			if sendExperimentError != nil {
 				logging.Error("SendExperimentError: %v\n", sendExperimentError)

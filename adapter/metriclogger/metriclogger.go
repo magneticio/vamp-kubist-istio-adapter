@@ -471,29 +471,25 @@ func CalculateMetricStats(valuesRaw []float64) (*models.MetricStats, error) {
 	// P999
 	if calculation, calculationErr := stats.Percentile(values, 0.999); calculationErr == nil {
 		metricStats.P999 = calculation
-	} else {
-		logging.Error("Calculation Error: %v\n", calculationErr)
 	}
 
 	// P99
 	if calculation, calculationErr := stats.Percentile(values, 0.99); calculationErr == nil {
 		metricStats.P99 = calculation
-	} else {
-		logging.Error("Calculation Error: %v\n", calculationErr)
 	}
 
 	// P95
 	if calculation, calculationErr := stats.Percentile(values, 0.95); calculationErr == nil {
 		metricStats.P95 = calculation
-	} else {
-		logging.Error("Calculation Error: %v\n", calculationErr)
 	}
 
 	// P75
 	if calculation, calculationErr := stats.Percentile(values, 0.75); calculationErr == nil {
 		metricStats.P75 = calculation
-	} else {
-		logging.Error("Calculation Error: %v\n", calculationErr)
+	}
+
+	if values.Len() <= 1 {
+		return metricStats, nil
 	}
 
 	// Rate
