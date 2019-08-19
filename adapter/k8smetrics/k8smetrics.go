@@ -16,20 +16,26 @@ const MetricsReadPeriod = 30 * time.Second
 func ProcessK8sMetrics() error {
 	metrics, err := kubernetes.GetSimpleMetrics("", vampclientprovider.VirtualCluster)
 	if err != nil {
+		logging.Error("Cannot read k8s metrics: %v", err)
 		return err
 	}
 	for i := 0; i < len(metrics); i++ {
-		logInstance := &models.LogInstance{
-			Timestamp:         time.Now().Unix(),
-			DestinationLabels: metrics[i].Labels,
-			Values:            map[string]interface{}{"CPU": metrics[i].CPU, "Memory": metrics[i].Memory},
+		for j := 0; j < len(metrics[i].ContainersMetrics); j++ {
+			logInstance := &models.LogInstance{
+				Timestamp:         time.Now().Unix(),
+				DestinationLabels: metrics[i].Labels,
+				Values: map[string]interface{}{
+					"CPU":    metrics[i].ContainersMetrics[j].CPU,
+					"Memory": metrics[i].ContainersMetrics[j].Memory},
+			}
+			processor.LogInstanceChannel <- logInstance
 		}
-		processor.LogInstanceChannel <- logInstance
 	}
 	return nil
 }
 
-func SetupK8sMetrics() {
+// Setup setups periodic read of k8s metrics
+func Setup() {
 	logging.Info("SetupConfigurator at %v Refresh period: %v\n", time.Now(), MetricsReadPeriod)
 	ProcessK8sMetrics()
 	ticker := time.NewTicker(MetricsReadPeriod)
