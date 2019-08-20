@@ -225,12 +225,6 @@ github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDe
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/magneticio/forklift v0.1.15 h1:inB8pobUzEsE1a7LEYIrQAI8jbluxu6YmTg0GGO9YzY=
 github.com/magneticio/forklift v0.1.15/go.mod h1:Epb+vpSn9uzzt4hr88W09/LghuYhCXj9eLiZXKrzgB4=
-github.com/magneticio/vampkubistcli v0.0.50 h1:23/JasSn6DIFCKw/XXtB9TtrLJfkkSoHpZm64a/328Q=
-github.com/magneticio/vampkubistcli v0.0.50/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
-github.com/magneticio/vampkubistcli v0.0.51 h1:OERI3o++KEyMXxs7qMSwZGB6+ZhROwuhyA5HwCOF9Q8=
-github.com/magneticio/vampkubistcli v0.0.51/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
-github.com/magneticio/vampkubistcli v0.0.52 h1:sW1w6p0osGb3L2veAgIagipBtZbX/nQyZtOOfMKi7Ks=
-github.com/magneticio/vampkubistcli v0.0.52/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
 github.com/magneticio/vampkubistcli v0.0.53 h1:H/z8ozYBmCY/Mp6RqimZ315s4Km/BwuC9g1cE35h5Rw=
 github.com/magneticio/vampkubistcli v0.0.53/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
