@@ -21,7 +21,7 @@ var k8sclient *k8s.Clientset
 
 // Setup setups periodic read of health metrics
 func Setup(ch chan *models.LogInstance) {
-	logging.Info("Setup reading k8s metrics at %v with period %v\n", time.Now(), MetricsReadPeriod)
+	logging.Info("Setup reading k8s health metrics at %v with period %v\n", time.Now(), MetricsReadPeriod)
 
 	var err error
 	k8sclient, err = kubeclient.K8sClient.Get("")
