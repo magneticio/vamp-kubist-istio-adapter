@@ -10,7 +10,7 @@ import (
 )
 
 // MetricsReadPeriod is interval between metrics retrieval
-const MetricsReadPeriod = 30 * time.Second
+const MetricsReadPeriod = 10 * time.Second
 
 // ProcessK8sMetrics reads metrics from K8s metric server and send them to adapter's processor
 func ProcessK8sMetrics(ch chan *models.LogInstance) error {
