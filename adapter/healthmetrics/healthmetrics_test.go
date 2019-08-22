@@ -7,7 +7,6 @@ import (
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/healthmetrics"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
-	//	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/processor"
 	kubeclient "github.com/magneticio/vampkubistcli/kubernetes"
 	"github.com/magneticio/vampkubistcli/logging"
 	"github.com/stretchr/testify/assert"
@@ -38,12 +37,6 @@ func CreateMockedK8s(t *testing.T, fileName string) *httptest.Server {
 	if err != nil {
 		t.Errorf("Cannot read metrics json file - %v", err)
 	}
-	/*
-		podJS, err := ioutil.ReadFile("pod_test.json")
-		if err != nil {
-			t.Errorf("Cannot read pod json file - %v", err)
-		}
-	*/
 	ts := createTestServer(func(w http.ResponseWriter, r *http.Request) {
 		t.Logf("Method: %v", r.Method)
 		t.Logf("Path: %v", r.URL.Path)
@@ -51,11 +44,6 @@ func CreateMockedK8s(t *testing.T, fileName string) *httptest.Server {
 		case r.URL.Path == "/apis/apps/v1/namespaces/logging/deployments":
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write(js)
-			/*
-				case strings.HasPrefix(r.URL.Path, "/api/v1/namespaces/vamp-system/pods/"):
-					w.Header().Set("Content-Type", "application/json")
-					_, _ = w.Write(podJS)
-			*/
 		default:
 		}
 	})
