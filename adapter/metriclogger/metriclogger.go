@@ -35,6 +35,34 @@ var MetricDefinitions = map[string]MetricInfo{
 		Type:       Valued,
 		NameFormat: "cpu_%v",
 	},
+	"ObservedGeneration": MetricInfo{
+		Type:       Valued,
+		NameFormat: "observed_generation_%v",
+	},
+	"Replicas": MetricInfo{
+		Type:       Valued,
+		NameFormat: "replicas_%v",
+	},
+	"UpdatedReplicas": MetricInfo{
+		Type:       Valued,
+		NameFormat: "updated_replicas_%v",
+	},
+	"ReadyReplicas": MetricInfo{
+		Type:       Valued,
+		NameFormat: "ready_replicas_%v",
+	},
+	"AvailableReplicas": MetricInfo{
+		Type:       Valued,
+		NameFormat: "available_replicas_%v",
+	},
+	"UnavailableReplicas": MetricInfo{
+		Type:       Valued,
+		NameFormat: "unavailable_replicas_%v",
+	},
+	"Availability": MetricInfo{
+		Type:       Valued,
+		NameFormat: "availability_%v",
+	},
 }
 
 // MapValueToPossibleCodes generates codes for possible variations of a metric
@@ -92,6 +120,13 @@ var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
 	"response_code_5xx":         NewMetricLoggerGroup("response_code_5xx", Categorical),
 	"memory":                    NewMetricLoggerGroup("memory", Valued),
 	"cpu":                       NewMetricLoggerGroup("cpu", Valued),
+	"observed_generation":       NewMetricLoggerGroup("observed_generation", Valued),
+	"replicas":                  NewMetricLoggerGroup("replicas", Valued),
+	"updated_replicas":          NewMetricLoggerGroup("updated_replicas", Valued),
+	"ready_replicas":            NewMetricLoggerGroup("ready_replicas", Valued),
+	"available_replicas":        NewMetricLoggerGroup("available_replicas", Valued),
+	"unavailable_replicas":      NewMetricLoggerGroup("unavailable_replicas", Valued),
+	"availability":              NewMetricLoggerGroup("availability", Valued),
 }
 
 // MetricType represent enum type of Valued or Categorical metrics

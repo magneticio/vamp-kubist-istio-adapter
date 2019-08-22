@@ -1,0 +1,340 @@
+{
+  "metadata": {
+    "selfLink": "/apis/apps/v1/namespaces/logging/deployments",
+    "resourceVersion": "1788607"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "elasticsearch",
+        "namespace": "logging",
+        "selfLink": "/apis/apps/v1/namespaces/logging/deployments/elasticsearch",
+        "uid": "d4dc4b26-c014-11e9-a7ab-42010a84007d",
+        "resourceVersion": "2651",
+        "generation": 1,
+        "creationTimestamp": "2019-08-16T10:58:51Z",
+        "labels": {
+          "app": "elasticsearch"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "1",
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{\"sidecar.istio.io/inject\":\"false\"},\"labels\":{\"app\":\"elasticsearch\"},\"name\":\"elasticsearch\",\"namespace\":\"logging\"},\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"app\":\"elasticsearch\"}},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"discovery.type\",\"value\":\"single-node\"}],\"image\":\"docker.elastic.co/elasticsearch/elasticsearch-oss:6.1.1\",\"name\":\"elasticsearch\",\"ports\":[{\"containerPort\":9200,\"name\":\"db\",\"protocol\":\"TCP\"},{\"containerPort\":9300,\"name\":\"transport\",\"protocol\":\"TCP\"}],\"resources\":{\"limits\":{\"cpu\":\"1000m\"},\"requests\":{\"cpu\":\"100m\"}},\"volumeMounts\":[{\"mountPath\":\"/data\",\"name\":\"elasticsearch\"}]}],\"volumes\":[{\"emptyDir\":{},\"name\":\"elasticsearch\"}]}}}}\n",
+          "sidecar.istio.io/inject": "false"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "selector": {
+          "matchLabels": {
+            "app": "elasticsearch"
+          }
+        },
+        "template": {
+          "metadata": {
+            "creationTimestamp": null,
+            "labels": {
+              "app": "elasticsearch"
+            }
+          },
+          "spec": {
+            "volumes": [
+              {
+                "name": "elasticsearch",
+                "emptyDir": null
+              }
+            ],
+            "containers": [
+              {
+                "name": "elasticsearch",
+                "image": "docker.elastic.co/elasticsearch/elasticsearch-oss:6.1.1",
+                "ports": [
+                  {
+                    "name": "db",
+                    "containerPort": 9200,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "transport",
+                    "containerPort": 9300,
+                    "protocol": "TCP"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "discovery.type",
+                    "value": "single-node"
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "1"
+                  },
+                  "requests": {
+                    "cpu": "100m"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "elasticsearch",
+                    "mountPath": "/data"
+                  }
+                ],
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "imagePullPolicy": "IfNotPresent"
+              }
+            ],
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": 30,
+            "dnsPolicy": "ClusterFirst",
+            "securityContext": null,
+            "schedulerName": "default-scheduler"
+          }
+        },
+        "strategy": {
+          "type": "RollingUpdate",
+          "rollingUpdate": {
+            "maxUnavailable": 1,
+            "maxSurge": 1
+          }
+        },
+        "revisionHistoryLimit": 2147483647,
+        "progressDeadlineSeconds": 2147483647
+      },
+      "status": {
+        "observedGeneration": 1,
+        "replicas": 1,
+        "updatedReplicas": 1,
+        "readyReplicas": 1,
+        "availableReplicas": 1,
+        "conditions": [
+          {
+            "type": "Available",
+            "status": "True",
+            "lastUpdateTime": "2019-08-16T10:58:51Z",
+            "lastTransitionTime": "2019-08-16T10:58:51Z",
+            "reason": "MinimumReplicasAvailable",
+            "message": "Deployment has minimum availability."
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "fluentd-es",
+        "namespace": "logging",
+        "selfLink": "/apis/apps/v1/namespaces/logging/deployments/fluentd-es",
+        "uid": "e4089ac1-c014-11e9-a7ab-42010a84007d",
+        "resourceVersion": "2757",
+        "generation": 1,
+        "creationTimestamp": "2019-08-16T10:59:16Z",
+        "labels": {
+          "app": "fluentd-es"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "1",
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{\"sidecar.istio.io/inject\":\"false\"},\"labels\":{\"app\":\"fluentd-es\"},\"name\":\"fluentd-es\",\"namespace\":\"logging\"},\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"app\":\"fluentd-es\"}},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"FLUENTD_ARGS\",\"value\":\"--no-supervisor -q\"}],\"image\":\"gcr.io/google-containers/fluentd-elasticsearch:v2.0.1\",\"name\":\"fluentd-es\",\"resources\":{\"limits\":{\"memory\":\"500Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"200Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/etc/fluent/config.d\",\"name\":\"config-volume\"},{\"mountPath\":\"/etc/fluent/logstash-mapping.json\",\"name\":\"custom-config-volume\",\"subPath\":\"logstash-mapping.json\"}]}],\"terminationGracePeriodSeconds\":30,\"volumes\":[{\"configMap\":{\"name\":\"fluentd-es-config\"},\"name\":\"config-volume\"},{\"configMap\":{\"name\":\"mapping-config\"},\"name\":\"custom-config-volume\"}]}}}}\n",
+          "sidecar.istio.io/inject": "false"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "selector": {
+          "matchLabels": {
+            "app": "fluentd-es"
+          }
+        },
+        "template": {
+          "metadata": {
+            "creationTimestamp": null,
+            "labels": {
+              "app": "fluentd-es"
+            }
+          },
+          "spec": {
+            "volumes": [
+              {
+                "name": "config-volume",
+                "configMap": {
+                  "name": "fluentd-es-config",
+                  "defaultMode": 420
+                }
+              },
+              {
+                "name": "custom-config-volume",
+                "configMap": {
+                  "name": "mapping-config",
+                  "defaultMode": 420
+                }
+              }
+            ],
+            "containers": [
+              {
+                "name": "fluentd-es",
+                "image": "gcr.io/google-containers/fluentd-elasticsearch:v2.0.1",
+                "env": [
+                  {
+                    "name": "FLUENTD_ARGS",
+                    "value": "--no-supervisor -q"
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "memory": "500Mi"
+                  },
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "200Mi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "config-volume",
+                    "mountPath": "/etc/fluent/config.d"
+                  },
+                  {
+                    "name": "custom-config-volume",
+                    "mountPath": "/etc/fluent/logstash-mapping.json",
+                    "subPath": "logstash-mapping.json"
+                  }
+                ],
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "imagePullPolicy": "IfNotPresent"
+              }
+            ],
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": 30,
+            "dnsPolicy": "ClusterFirst",
+            "securityContext": null,
+            "schedulerName": "default-scheduler"
+          }
+        },
+        "strategy": {
+          "type": "RollingUpdate",
+          "rollingUpdate": {
+            "maxUnavailable": 1,
+            "maxSurge": 1
+          }
+        },
+        "revisionHistoryLimit": 2147483647,
+        "progressDeadlineSeconds": 2147483647
+      },
+      "status": {
+        "observedGeneration": 1,
+        "replicas": 1,
+        "updatedReplicas": 1,
+        "readyReplicas": 1,
+        "availableReplicas": 1,
+        "conditions": [
+          {
+            "type": "Available",
+            "status": "True",
+            "lastUpdateTime": "2019-08-16T10:59:16Z",
+            "lastTransitionTime": "2019-08-16T10:59:16Z",
+            "reason": "MinimumReplicasAvailable",
+            "message": "Deployment has minimum availability."
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "kibana",
+        "namespace": "logging",
+        "selfLink": "/apis/apps/v1/namespaces/logging/deployments/kibana",
+        "uid": "e41bd1a5-c014-11e9-a7ab-42010a84007d",
+        "resourceVersion": "2838",
+        "generation": 1,
+        "creationTimestamp": "2019-08-16T10:59:17Z",
+        "labels": {
+          "app": "kibana"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "1",
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{\"sidecar.istio.io/inject\":\"false\"},\"labels\":{\"app\":\"kibana\"},\"name\":\"kibana\",\"namespace\":\"logging\"},\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"app\":\"kibana\"}},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"ELASTICSEARCH_URL\",\"value\":\"http://elasticsearch:9200\"}],\"image\":\"docker.elastic.co/kibana/kibana-oss:6.1.1\",\"name\":\"kibana\",\"ports\":[{\"containerPort\":5601,\"name\":\"ui\",\"protocol\":\"TCP\"}],\"resources\":{\"limits\":{\"cpu\":\"1000m\"},\"requests\":{\"cpu\":\"100m\"}}}]}}}}\n",
+          "sidecar.istio.io/inject": "false"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "selector": {
+          "matchLabels": {
+            "app": "kibana"
+          }
+        },
+        "template": {
+          "metadata": {
+            "creationTimestamp": null,
+            "labels": {
+              "app": "kibana"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "kibana",
+                "image": "docker.elastic.co/kibana/kibana-oss:6.1.1",
+                "ports": [
+                  {
+                    "name": "ui",
+                    "containerPort": 5601,
+                    "protocol": "TCP"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "ELASTICSEARCH_URL",
+                    "value": "http://elasticsearch:9200"
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "1"
+                  },
+                  "requests": {
+                    "cpu": "100m"
+                  }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "imagePullPolicy": "IfNotPresent"
+              }
+            ],
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": 30,
+            "dnsPolicy": "ClusterFirst",
+            "securityContext": null,
+            "schedulerName": "default-scheduler"
+          }
+        },
+        "strategy": {
+          "type": "RollingUpdate",
+          "rollingUpdate": {
+            "maxUnavailable": 1,
+            "maxSurge": 1
+          }
+        },
+        "revisionHistoryLimit": 2147483647,
+        "progressDeadlineSeconds": 2147483647
+      },
+      "status": {
+        "observedGeneration": 1,
+        "replicas": 1,
+        "updatedReplicas": 1,
+        "readyReplicas": 1,
+        "availableReplicas": 1,
+        "conditions": [
+          {
+            "type": "Available",
+            "status": "True",
+            "lastUpdateTime": "2019-08-16T10:59:17Z",
+            "lastTransitionTime": "2019-08-16T10:59:17Z",
+            "reason": "MinimumReplicasAvailable",
+            "message": "Deployment has minimum availability."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -36,7 +36,7 @@ func ProcessK8sMetrics(ch chan *models.LogInstance) error {
 
 // Setup setups periodic read of k8s metrics
 func Setup(ch chan *models.LogInstance) {
-	logging.Info("SetupConfigurator at %v Refresh period: %v\n", time.Now(), MetricsReadPeriod)
+	logging.Info("Setup reading k8s metrics at %v with period %v\n", time.Now(), MetricsReadPeriod)
 	kubernetes.IsKubeClientInCluster = true
 	ProcessK8sMetrics(ch)
 	ticker := time.NewTicker(MetricsReadPeriod)

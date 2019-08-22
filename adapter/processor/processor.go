@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/configurator"
+	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/healthmetrics"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/k8smetrics"
 	metriclogger "github.com/magneticio/vamp-kubist-istio-adapter/adapter/metriclogger"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
@@ -69,6 +70,7 @@ func RunProcessor() {
 	subsetmapper.Setup()
 	metriclogger.Setup()
 	k8smetrics.Setup(LogInstanceChannel)
+	healthmetrics.Setup(LogInstanceChannel)
 	SetupProcessor()
 	for {
 		logInstance := <-LogInstanceChannel
