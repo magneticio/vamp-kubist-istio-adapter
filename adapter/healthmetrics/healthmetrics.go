@@ -68,7 +68,7 @@ func Process(ch chan *models.LogInstance) error {
 	for i := 0; i < len(deps.Items); i++ {
 		logInstance := &models.LogInstance{
 			Timestamp:         time.Now().Unix(),
-			DestinationLabels: deps.Items[i].Labels,
+			DestinationLabels: deps.Items[i].Spec.Selector.MatchLabels,
 			Values: map[string]interface{}{
 				"ObservedGeneration":  deps.Items[i].Status.ObservedGeneration,
 				"Replicas":            deps.Items[i].Status.Replicas,
