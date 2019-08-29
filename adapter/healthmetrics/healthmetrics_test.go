@@ -3,6 +3,9 @@ package healthmetrics_test
 import (
 	"os"
 	"testing"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/healthmetrics"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
@@ -10,11 +13,8 @@ import (
 	kubeclient "github.com/magneticio/vampkubistcli/kubernetes"
 	"github.com/magneticio/vampkubistcli/logging"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"net/http"
-	"net/http/httptest"
 )
 
 func createTestServer(fn func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
@@ -81,7 +81,6 @@ func TestProcessHealthMetrics(t *testing.T) {
 
 	elastic := in[0]
 	assert.Equal(t, "elasticsearch", elastic.DestinationLabels["app"])
-	assert.Equal(t, int64(1), elastic.Values["ObservedGeneration"])
 	assert.Equal(t, int32(1), elastic.Values["Replicas"])
 	assert.Equal(t, int32(1), elastic.Values["UpdatedReplicas"])
 	assert.Equal(t, int32(1), elastic.Values["ReadyReplicas"])
