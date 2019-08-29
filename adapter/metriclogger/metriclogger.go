@@ -40,6 +40,7 @@ var MetricDefinitions = map[string]MetricInfo{
 	"AvailableReplicas":   NewMetricInfo(Valued, "available_replicas_%v"),
 	"UnavailableReplicas": NewMetricInfo(Valued, "unavailable_replicas_%v"),
 	"Availability":        NewMetricInfo(Valued, "availability_%v"),
+	"requests":            NewMetricInfo(Categorical, "requests_%v"),
 }
 
 // NewMetricInfo creates a metric info with given inputs
