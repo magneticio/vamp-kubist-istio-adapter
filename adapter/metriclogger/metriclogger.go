@@ -35,10 +35,6 @@ var MetricDefinitions = map[string]MetricInfo{
 		Type:       Valued,
 		NameFormat: "cpu_%v",
 	},
-	"ObservedGeneration": MetricInfo{
-		Type:       Valued,
-		NameFormat: "observed_generation_%v",
-	},
 	"Replicas": MetricInfo{
 		Type:       Valued,
 		NameFormat: "replicas_%v",
@@ -120,7 +116,6 @@ var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
 	"response_code_5xx":         NewMetricLoggerGroup("response_code_5xx", Categorical),
 	"memory":                    NewMetricLoggerGroup("memory", Valued),
 	"cpu":                       NewMetricLoggerGroup("cpu", Valued),
-	"observed_generation":       NewMetricLoggerGroup("observed_generation", Valued),
 	"replicas":                  NewMetricLoggerGroup("replicas", Valued),
 	"updated_replicas":          NewMetricLoggerGroup("updated_replicas", Valued),
 	"ready_replicas":            NewMetricLoggerGroup("ready_replicas", Valued),

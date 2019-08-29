@@ -70,7 +70,6 @@ func Process(ch chan *models.LogInstance) error {
 			Timestamp:         time.Now().Unix(),
 			DestinationLabels: deps.Items[i].Spec.Selector.MatchLabels,
 			Values: map[string]interface{}{
-				"ObservedGeneration":  deps.Items[i].Status.ObservedGeneration,
 				"Replicas":            deps.Items[i].Status.Replicas,
 				"UpdatedReplicas":     deps.Items[i].Status.UpdatedReplicas,
 				"ReadyReplicas":       deps.Items[i].Status.ReadyReplicas,
