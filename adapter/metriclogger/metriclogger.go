@@ -214,7 +214,7 @@ func NewMetricLogger(destination string, port string, subset string, metricName 
 	// Important Note: MetricDuration < ( NumberOfBuckets -1 ) * RefreshPeriod
 	// Pre initilize value maps
 	for i := 0; i < metricLogger.NumberOfBuckets; i++ {
-		metricLogger.ValueMaps[i] = make(map[int64][]float64, 0)
+		metricLogger.ValueMaps = append(metricLogger.ValueMaps, make(map[int64][]float64, 0))
 	}
 	atomic.StoreInt32(&metricLogger.ActiveID, 0)
 	return metricLogger
