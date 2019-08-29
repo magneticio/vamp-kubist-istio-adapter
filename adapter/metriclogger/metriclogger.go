@@ -137,11 +137,13 @@ func (d MetricType) String() string {
 	return [...]string{"Valued", "Categorical"}[d]
 }
 
+// MetricInfo is a struct used for defining metric name mapping
 type MetricInfo struct {
 	Type       MetricType
 	NameFormat string
 }
 
+// MetricLoggerGroup is used to group similar metrics to decrease processing
 type MetricLoggerGroup struct {
 	Name          string
 	MetricType    MetricType
@@ -150,6 +152,7 @@ type MetricLoggerGroup struct {
 	IsSetup       bool
 }
 
+// MetricLogger is a struct that holds metrics for a single stream of metric
 type MetricLogger struct {
 	Name            string
 	MetricType      MetricType
@@ -162,17 +165,15 @@ type MetricLogger struct {
 	RefreshPeriod   time.Duration
 }
 
-type MetricValue struct {
-	Timestamp int64
-	Value     float64
-}
-
+// MetricValues is a struct to hold one bucket of metric stream
 type MetricValues struct {
 	StartTime int64
 	EndTime   int64
 	Values    map[int64][]float64
 }
 
+// Setup sets up timer to regularly process a metric group.
+// This is actually not needed anymore, since dynamic setup is possible now.
 func Setup() {
 	logging.Info("Setting up Metric Logger Groups")
 	for _, val := range MetricLoggerGroupMap {
@@ -180,6 +181,7 @@ func Setup() {
 	}
 }
 
+// NewMetricLoggerGroup creates a new metric logger group
 func NewMetricLoggerGroup(metricName string, metricType MetricType) *MetricLoggerGroup {
 	metricLoggerGroup := &MetricLoggerGroup{
 		Name:          metricName,
@@ -191,6 +193,7 @@ func NewMetricLoggerGroup(metricName string, metricType MetricType) *MetricLogge
 	return metricLoggerGroup
 }
 
+// GetMetricLogger gets or creates a metric logger for destination, port, subset
 func (g *MetricLoggerGroup) GetMetricLogger(destination string, port string, subset string) *MetricLogger {
 	key := fmt.Sprintf("%v:%v/%v", destination, port, subset)
 	if _, ok := g.MetricLoggers[key]; !ok {
@@ -199,6 +202,7 @@ func (g *MetricLoggerGroup) GetMetricLogger(destination string, port string, sub
 	return g.MetricLoggers[key]
 }
 
+// NewMetricLogger creates a new metric logger and pre-initializes buckets
 func NewMetricLogger(destination string, port string, subset string, metricName string, metricType MetricType, refreshPeriod time.Duration) *MetricLogger {
 	metricLogger := &MetricLogger{
 		Name:            metricName,
@@ -243,6 +247,8 @@ func (g *MetricLoggerGroup) Setup() {
 	}()
 }
 
+// ConvertToFloat64 gets an interface and converts into float64
+// All metrics are stored as float64, if a new type added this should be updated
 func ConvertToFloat64(i interface{}) float64 {
 	switch v := i.(type) {
 	case int:
@@ -272,8 +278,6 @@ func ConvertToFloat64(i interface{}) float64 {
 	}
 	return 0
 }
-
-// TODO: add other info like http method
 
 // GetMetricLoggerNames return name to be used as metric identifier
 func (m *MetricInfo) GetMetricLoggerNames(name string, apiProtocol, requestMethod, responseCode string, value interface{}) []string {
@@ -381,7 +385,6 @@ func (m *MetricLogger) ProcessMetricLogger(metricValues *MetricValues) error {
 	default: // default is valued
 		return m.ProcessValuedMetricLogger(metricValues)
 	}
-	return nil
 }
 
 // ProcessValuedMetricLogger processes metrics and trigger send metrics
@@ -444,9 +447,8 @@ func (m *MetricLogger) ProcessCategoricalMetricLogger(metricValues *MetricValues
 	return nil
 }
 
-// CalculateMetricStats does what its name says
+// CalculateMetricStats calculate metris stats with stats library
 func CalculateMetricStats(valuesRaw []float64) (*models.MetricStats, error) {
-	// Calculate metrics and send it to vamp api
 
 	values := stats.LoadRawData(valuesRaw)
 	// NumberOfElements

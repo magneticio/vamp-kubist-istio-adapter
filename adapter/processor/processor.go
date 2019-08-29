@@ -19,22 +19,33 @@ import (
 	"github.com/magneticio/vampkubistcli/logging"
 )
 
+// bufferSize for processing queue, it should be incremented to handle burst of input
 const bufferSize = 1000
 
+// LogInstanceChannel is the main channel to store logInstances to be processed
 var LogInstanceChannel = make(chan *models.LogInstance, bufferSize)
 
+// TODO: Experiment loggers should be merged to metric loggers or refactored
+
+// ExperimentLoggers0 is the first logger for experiments
 var ExperimentLoggers0 models.ExperimentLoggers
+
+// ExperimentLoggers1 is the first logger for experiments
 var ExperimentLoggers1 models.ExperimentLoggers
 
-// this is added for testing
+// SendExperimentLoggers is added for testing (false for testing)
 var SendExperimentLoggers = true
 
+// activeLoggerID sets active experiment logger
 var activeLoggerID int32
 
+// RefreshPeriod is the period used for refreshing experiment logging period
 const RefreshPeriod = 60 * time.Second
 
 /*
-Example of a real log instance:
+TODO: move this example to a proper place
+
+Example of a real log instance that is provided for istio
 
 TimeStamp:  2019-06-19T12:09:30.732103777Z
 Severity:  info
@@ -51,6 +62,7 @@ responseSize :  4405
 source :  gw-1-gateway
 */
 
+// SetupProcessor sets up a regular process to refresh and send experiment metrics
 func SetupProcessor() {
 	logging.Info("SetupProcessor at %v Refresh period: %v\n", time.Now(), RefreshPeriod)
 	RefreshExperimentLoggers()
@@ -65,6 +77,7 @@ func SetupProcessor() {
 	}()
 }
 
+// RunProcessor is the main function for Processor related tasks
 func RunProcessor() {
 	configurator.SetupConfigurator()
 	subsetmapper.Setup()
@@ -79,8 +92,12 @@ func RunProcessor() {
 	}
 }
 
+// GetStringFromInterface is a helper method to convert interface to string where possible
 func GetStringFromInterface(values map[string]interface{}, key string) string {
-	return fmt.Sprintf("%v", values[key])
+	if value, ok := values[key]; ok {
+		return fmt.Sprintf("%v", value)
+	}
+	return ""
 }
 
 // ProcessInstanceForMetrics processes a log instance for extracting metrics
@@ -132,6 +149,7 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	}
 }
 
+// ProcessInstanceForExperiments extract experiment metrics if url and cookie is provided
 func ProcessInstanceForExperiments(
 	experimentConfigurations *models.ExperimentConfigurations,
 	logInstance *models.LogInstance) {
@@ -190,11 +208,13 @@ func ProcessInstanceForExperiments(
 	}
 }
 
+// GetRegexForStartsWithPath creates a starts regex from any string
 func GetRegexForStartsWithPath(targetPath string) (*regexp.Regexp, error) {
 	regexString := "^" + regexp.QuoteMeta(targetPath)
 	return regexp.Compile(regexString)
 }
 
+// CreateEntrySafe creates entries in experiment logger map by checking existance
 func CreateEntrySafe(experimentLogger *models.ExperimentLoggers, experimentName, subsetName, userID string) {
 	if experimentLogger.ExperimentLogs == nil {
 		experimentLogger.ExperimentLogs = make(map[string]models.ExperimentLogs)
@@ -219,6 +239,7 @@ func CreateEntrySafe(experimentLogger *models.ExperimentLoggers, experimentName,
 	}
 }
 
+// GetExperimentLoggers returns active logger
 func GetExperimentLoggers() *models.ExperimentLoggers {
 	if atomic.LoadInt32(&activeLoggerID) == 0 {
 		return &ExperimentLoggers0
@@ -226,6 +247,7 @@ func GetExperimentLoggers() *models.ExperimentLoggers {
 	return &ExperimentLoggers1
 }
 
+// RefreshExperimentLoggers triggers a processing and then refresing of active logger
 func RefreshExperimentLoggers() error {
 	logging.Info("Process and Clean Experiment Loggers at: %v\n", time.Now())
 	if atomic.LoadInt32(&activeLoggerID) == 0 {
@@ -249,6 +271,7 @@ func RefreshExperimentLoggers() error {
 	}
 }
 
+// ProcessExperimentLoggers processes a logger and calculates experiment stats
 func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error {
 	if experimentLoggers == nil {
 		return errors.New("experimentLoggers is nil")
@@ -256,7 +279,7 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error
 	experimentStatsGroup := &models.ExperimentStatsGroup{
 		ExperimentStatsMap: make(map[string]models.ExperimentStats),
 	}
-	// experimentStatsMap := make(map[string]models.ExperimentStats)
+
 	experimentConfigurations := configurator.GetExperimentConfigurations()
 	for experimentName, experimentConf := range experimentConfigurations.ExperimentConfigurationMap {
 		if _, ok := experimentLoggers.ExperimentLogs[experimentName]; !ok {
@@ -308,12 +331,11 @@ func ProcessExperimentLoggers(experimentLoggers *models.ExperimentLoggers) error
 		}
 	}
 	logging.Info("experimentStatsMap: %v\n", experimentStatsGroup.ExperimentStatsMap)
-	if SendExperimentLoggers {
+	if SendExperimentLoggers { // This is only false when testing
 		// send stats to the server
 		return configurator.SendExperimentStats(experimentStatsGroup)
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // GetMergedExperimentLoggers is added for testing
