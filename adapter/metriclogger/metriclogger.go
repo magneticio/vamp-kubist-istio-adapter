@@ -16,49 +16,38 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
+// DefaultRefreshPeriod represents the bucket move period
 const DefaultRefreshPeriod = 30 * time.Second
 
+// DefaultMetricDuration will be used for calculation of metrics
+const DefaultMetricDuration = 30 * time.Second
+
+// Number Of Buckets that can be used for metric storage
+const DefaultNumberOfBuckets = 3
+
+// MetricDuration < ( NumberOfBuckets -1 ) * RefreshPeriod
+
+// MetricDefinitions is a mapping of metrics from input name to output name
 var MetricDefinitions = map[string]MetricInfo{
-	"responseDuration": MetricInfo{
-		Type:       Valued,
-		NameFormat: "response_duration_%v",
-	},
-	"responseCode": MetricInfo{
-		Type:       Categorical,
-		NameFormat: "response_code_%v",
-	},
-	"Memory": MetricInfo{
-		Type:       Valued,
-		NameFormat: "memory_%v",
-	},
-	"CPU": MetricInfo{
-		Type:       Valued,
-		NameFormat: "cpu_%v",
-	},
-	"Replicas": MetricInfo{
-		Type:       Valued,
-		NameFormat: "replicas_%v",
-	},
-	"UpdatedReplicas": MetricInfo{
-		Type:       Valued,
-		NameFormat: "updated_replicas_%v",
-	},
-	"ReadyReplicas": MetricInfo{
-		Type:       Valued,
-		NameFormat: "ready_replicas_%v",
-	},
-	"AvailableReplicas": MetricInfo{
-		Type:       Valued,
-		NameFormat: "available_replicas_%v",
-	},
-	"UnavailableReplicas": MetricInfo{
-		Type:       Valued,
-		NameFormat: "unavailable_replicas_%v",
-	},
-	"Availability": MetricInfo{
-		Type:       Valued,
-		NameFormat: "availability_%v",
-	},
+	"responseDuration":    NewMetricInfo(Valued, "response_duration_%v"),
+	"responseCode":        NewMetricInfo(Categorical, "response_code_%v"),
+	"Memory":              NewMetricInfo(Valued, "memory_%v"),
+	"CPU":                 NewMetricInfo(Valued, "cpu_%v"),
+	"Replicas":            NewMetricInfo(Valued, "replicas_%v"),
+	"UpdatedReplicas":     NewMetricInfo(Valued, "updated_replicas_%v"),
+	"ReadyReplicas":       NewMetricInfo(Valued, "updated_replicas_%v"),
+	"AvailableReplicas":   NewMetricInfo(Valued, "available_replicas_%v"),
+	"UnavailableReplicas": NewMetricInfo(Valued, "unavailable_replicas_%v"),
+	"Availability":        NewMetricInfo(Valued, "availability_%v"),
+	"requests":            NewMetricInfo(Categorical, "requests_%v"),
+}
+
+// NewMetricInfo creates a metric info with given inputs
+func NewMetricInfo(metricType MetricType, nameFormat string) MetricInfo {
+	return MetricInfo{
+		Type:       metricType,
+		NameFormat: nameFormat,
+	}
 }
 
 // MapValueToPossibleCodes generates codes for possible variations of a metric
@@ -76,6 +65,7 @@ func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseC
 			"head":   true,
 			"delete": true,
 			"option": true,
+			"patch":  true,
 		}
 		if methods[requestMethod] {
 			apiProtocol = "http"
@@ -98,9 +88,8 @@ func MapValueToPossibleCodes(apiProtocol string, requestMethod string, responseC
 	return []string{""}
 }
 
-// TODO: Populate this map automatically
-
 // MetricLoggerGroupMap returns map of metric logger groups
+// This is the default map other new values will be created on the fly
 var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
 	"response_duration":         NewMetricLoggerGroup("response_duration", Valued),
 	"response_duration_200":     NewMetricLoggerGroup("response_duration_200", Valued),
@@ -124,6 +113,15 @@ var MetricLoggerGroupMap = map[string]*MetricLoggerGroup{
 	"availability":              NewMetricLoggerGroup("availability", Valued),
 }
 
+// GetOrCreateMetricLoggerGroup adds non existing metrics to the metric list and returns it
+func GetOrCreateMetricLoggerGroup(name string, metricType MetricType) *MetricLoggerGroup {
+	if _, ok := MetricLoggerGroupMap[name]; !ok {
+		MetricLoggerGroupMap[name] = NewMetricLoggerGroup(name, metricType)
+		MetricLoggerGroupMap[name].Setup()
+	}
+	return MetricLoggerGroupMap[name]
+}
+
 // MetricType represent enum type of Valued or Categorical metrics
 type MetricType int
 
@@ -139,7 +137,7 @@ func (d MetricType) String() string {
 }
 
 type MetricInfo struct {
-	Type       MetricType //todo enum
+	Type       MetricType
 	NameFormat string
 }
 
@@ -148,17 +146,19 @@ type MetricLoggerGroup struct {
 	MetricType    MetricType
 	RefreshPeriod time.Duration
 	MetricLoggers map[string]*MetricLogger
+	IsSetup       bool
 }
 
 type MetricLogger struct {
-	Name          string
-	MetricType    MetricType
-	Destination   string
-	Port          string
-	Subset        string
-	ValueMaps     []map[int64][]float64
-	ActiveID      int32
-	RefreshPeriod time.Duration
+	Name            string
+	MetricType      MetricType
+	Destination     string
+	Port            string
+	Subset          string
+	NumberOfBuckets int
+	ValueMaps       []map[int64][]float64
+	ActiveID        int32
+	RefreshPeriod   time.Duration
 }
 
 type MetricValue struct {
@@ -185,8 +185,8 @@ func NewMetricLoggerGroup(metricName string, metricType MetricType) *MetricLogge
 		MetricType:    metricType,
 		MetricLoggers: make(map[string]*MetricLogger),
 		RefreshPeriod: DefaultRefreshPeriod,
+		IsSetup:       false,
 	}
-	// metricLoggerGroup.Setup()
 	return metricLoggerGroup
 }
 
@@ -200,17 +200,19 @@ func (g *MetricLoggerGroup) GetMetricLogger(destination string, port string, sub
 
 func NewMetricLogger(destination string, port string, subset string, metricName string, metricType MetricType, refreshPeriod time.Duration) *MetricLogger {
 	metricLogger := &MetricLogger{
-		Name:          metricName,
-		MetricType:    metricType,
-		Destination:   destination,
-		Port:          port,
-		Subset:        subset,
-		RefreshPeriod: refreshPeriod,
-		ValueMaps: []map[int64][]float64{
-			make(map[int64][]float64, 0),
-			make(map[int64][]float64, 0),
-			make(map[int64][]float64, 0),
-		},
+		Name:            metricName,
+		MetricType:      metricType,
+		Destination:     destination,
+		Port:            port,
+		Subset:          subset,
+		RefreshPeriod:   refreshPeriod,
+		NumberOfBuckets: DefaultNumberOfBuckets,
+		ValueMaps:       []map[int64][]float64{},
+	}
+	// Important Note: MetricDuration < ( NumberOfBuckets -1 ) * RefreshPeriod
+	// Pre initilize value maps
+	for i := 0; i < metricLogger.NumberOfBuckets; i++ {
+		metricLogger.ValueMaps = append(metricLogger.ValueMaps, make(map[int64][]float64, 0))
 	}
 	atomic.StoreInt32(&metricLogger.ActiveID, 0)
 	return metricLogger
@@ -218,6 +220,10 @@ func NewMetricLogger(destination string, port string, subset string, metricName 
 
 // Setup sets up a periodic process to calculate and send metrics
 func (g *MetricLoggerGroup) Setup() {
+	if g.IsSetup == true {
+		return
+	}
+	g.IsSetup = true
 	logging.Info("Setup Metric logger Group for %v Refresh period: %v\n", g.Name, g.RefreshPeriod)
 	for _, metricLogger := range g.MetricLoggers {
 		metricLogger.RefreshMetricLogger()
@@ -348,7 +354,7 @@ func (m *MetricLogger) MergeValuesOfNonActiveBucketsWithTimeBasedFiltering(now i
 
 // RefreshMetricLogger trigger process and cleanup of metric buckets
 func (m *MetricLogger) RefreshMetricLogger() error {
-	logging.Info(">>>>>> Process and Clean Metriclogger Values for %v\n", m.Name)
+	logging.Info("Process and Clean Metriclogger Values for %v\n", m.Name)
 	id := atomic.LoadInt32(&m.ActiveID)
 	// TODO: review this logic of calculating next active id
 	nextID := (int(id) + 1) % len(m.ValueMaps)

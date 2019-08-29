@@ -132,6 +132,7 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
 			DestinationLabels: make(map[string]string, 0),
 			Values:            make(map[string]interface{}, 1),
 		}
+		logInstance.Values["requests"] = int64(1)
 		// severity := inst.Severity // TODO: add check, we expect severity to be info
 		// TODO: we could do this without a loop
 		for k, v := range inst.Variables {

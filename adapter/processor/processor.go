@@ -101,31 +101,30 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 			groupNames := metricInfo.GetMetricLoggerNames(metricName, apiProtocol, requestMethod, responseCode, metricValue)
 			// logging.Info("Group Names for %v, %v, %v, %v, %v\n", metricName, apiProtocol, requestMethod, responseCode, metricValue)
 			for _, groupName := range groupNames {
-				if metricLoggerGroup, existInGroupMap := metriclogger.MetricLoggerGroupMap[groupName]; existInGroupMap {
-					for _, subsetInfo := range subsets {
-						// logging.Info("Subset info: %v\n", subsetInfo)
-						if len(subsetInfo.SubsetWithPorts.Ports) > 0 {
-							for _, destWithPorts := range subsetInfo.SubsetWithPorts.Ports {
-								if port != "" {
-									// Service port and service target port should be handled.
-									// LogInstance has one destination port where destination is a container
-									// port is expected to be the target port not the service port
-									// A map of service port to target port mapping
-									if strconv.Itoa(destWithPorts.TargetPort) == port {
-										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
-									} else {
-										// TODO: test with different service port and container port case
-										// Read the comments above
-										logging.Info("Ports: %v - %v\n", destWithPorts.Port, port)
-										metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, strconv.Itoa(destWithPorts.Port), subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
-									}
-								} else {
+				metricLoggerGroup := metriclogger.GetOrCreateMetricLoggerGroup(groupName, metricInfo.Type)
+				for _, subsetInfo := range subsets {
+					// logging.Info("Subset info: %v\n", subsetInfo)
+					if len(subsetInfo.SubsetWithPorts.Ports) > 0 {
+						for _, destWithPorts := range subsetInfo.SubsetWithPorts.Ports {
+							if port != "" {
+								// Service port and service target port should be handled.
+								// LogInstance has one destination port where destination is a container
+								// port is expected to be the target port not the service port
+								// A map of service port to target port mapping
+								if strconv.Itoa(destWithPorts.TargetPort) == port {
 									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
+								} else {
+									// TODO: test with different service port and container port case
+									// Read the comments above
+									logging.Info("Ports: %v - %v\n", destWithPorts.Port, port)
+									metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, strconv.Itoa(destWithPorts.Port), subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 								}
+							} else {
+								metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 							}
-						} else {
-							metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 						}
+					} else {
+						metricLoggerGroup.GetMetricLogger(subsetInfo.DestinationName, port, subsetInfo.SubsetWithPorts.Subset).Push(timestamp, metricValue)
 					}
 				}
 			}
