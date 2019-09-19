@@ -204,6 +204,7 @@ func GenerateInstanceWithLogEntryTemplate(labels []string, namespace string) *mo
 		"responseDuration":     "response.duration | \"0ms\"",
 		"url":                  "request.path | \"\"",
 		"cookies":              "request.headers[\"cookie\"] | \"\"",
+		"destinationLabels":    "destination.labels | emptyStringMap()",
 	}
 
 	labelPrefix := "label"
