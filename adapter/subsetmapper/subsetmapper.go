@@ -93,7 +93,7 @@ func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInf
 	destinationsSubsetsMap := GetDestinationsSubsetsMap()
 	if destinationsSubsetsMap == nil {
 		logging.Error("DestinationsSubsetsMap is still nil")
-		fmt.Printf("DestinationsSubsetsMap is still nil")
+		// fmt.Printf("DestinationsSubsetsMap is still nil")
 		return []SubsetInfo{}
 	}
 	keys := make([]string, 0, len(labels))
@@ -117,18 +117,18 @@ func GetSubsetByLabels(destination string, labels map[string]string) []SubsetInf
 			}
 		}
 		labelsMapString := sb.String()
-		logging.Info("labelsMapString: __%v__\n", labelsMapString)
-		fmt.Printf("labelsMapString: __%v__\n", labelsMapString)
+		// logging.Info("labelsMapString: __%v__\n", labelsMapString)
+		// fmt.Printf("labelsMapString: __%v__\n", labelsMapString)
 		if destination != "" {
 			destinationData, existDestination := destinationsSubsetsMap.DestinationsMap[destination]
 			if !existDestination {
-				fmt.Printf("destination not exist: %v\n", destination)
+				// fmt.Printf("destination not exist: %v\n", destination)
 				continue
 			}
 			subsetData, existSubset := destinationData.Map[labelsMapString]
 			if !existSubset {
-				fmt.Printf("destinationData.Map: %v\n", destinationData.Map)
-				fmt.Printf("subset not exist: %v\n", labelsMapString)
+				// fmt.Printf("destinationData.Map: %v\n", destinationData.Map)
+				// fmt.Printf("subset not exist: %v\n", labelsMapString)
 				continue
 			}
 			destinationName := destinationData.DestinationName

@@ -1,14 +1,7 @@
 syntax = "proto3";
 
-// config for vampadapter
-package adapter.vampcadapter.config;
+// Config for vampadapter
+package config;
 
-import "gogoproto/gogo.proto";
-
-option go_package="config";
-
-// config for vampadapter
-message Params {
-    // Path of the file to save the information about runtime requests.
-    string file_path = 1;
-}
+// Params for vampadapter
+message Params {}

@@ -84,14 +84,18 @@ func TestGetSubsetByLabels(t *testing.T) {
 
 	subsetInfo := subsetInfo0[0]
 
-	result := -1
-
 	fmt.Printf("subsetInfo %v\n", subsetInfo)
 
 	assert.Equal(t, "kubist-example-destination", subsetInfo.DestinationName)
 	assert.Equal(t, "v0-0-24", subsetInfo.SubsetWithPorts.Subset)
 	assert.Equal(t, int(8080), subsetInfo.SubsetWithPorts.Ports[0].TargetPort)
 
+	result := checkSubsetInfoByPort(&subsetInfo, port)
+
+	assert.Equal(t, 0, result)
+}
+
+func checkSubsetInfoByPort(subsetInfo *subsetmapper.SubsetInfo, port string) int {
 	// This is the logic used inside logInstance processor
 	if len(subsetInfo.SubsetWithPorts.Ports) > 0 {
 		for _, destWithPorts := range subsetInfo.SubsetWithPorts.Ports {
@@ -101,19 +105,18 @@ func TestGetSubsetByLabels(t *testing.T) {
 				// port is expected to be the target port not the service port
 				// A map of service port to target port mapping
 				if strconv.Itoa(destWithPorts.TargetPort) == port {
-					result = 0
+					return 0
 				} else {
 					// TODO: test with different service port and container port case
 					// Read the comments above
-					result = 1
+					return 1
 				}
 			} else {
-				result = 2
+				return 2
 			}
 		}
 	} else {
-		result = 3
+		return 3
 	}
-
-	assert.Equal(t, 0, result)
+	return -1
 }

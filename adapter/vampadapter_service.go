@@ -77,7 +77,7 @@ type InstanceMsg struct {
 // HandleLogEntry records log entries
 func (s *VampAdapter) HandleLogEntry(ctx context.Context, r *logentry.HandleLogEntryRequest) (*v1beta1.ReportResult, error) {
 
-	// fmt.Printf("received request %v\n", *r)
+	fmt.Printf("received request %v\n", *r)
 	// var b bytes.Buffer
 	cfg := &config.Params{}
 
@@ -175,7 +175,7 @@ func (s *VampAdapter) instances(in []*logentry.InstanceMsg) error {
 		}
 
 		processor.LogInstanceChannel <- logInstance
-		// fmt.Printf("logInstance: %v\n", logInstance)
+		fmt.Printf("logInstance from istio: %v\n", logInstance)
 	}
 
 	return nil

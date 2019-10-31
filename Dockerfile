@@ -12,7 +12,7 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.0/b
 
 WORKDIR /app
 COPY --from=build-env /root/src/vampadapter /app/
-COPY --from=build-env /root/src/adapter/resources/setup.yml /app/
+COPY --from=build-env /root/src/adapter/resources/* /app/
 COPY --from=build-env /root/src/entrypoint.sh /app/
 RUN chmod +x ./entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]

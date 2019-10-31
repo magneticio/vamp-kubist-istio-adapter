@@ -2,28 +2,31 @@ module github.com/magneticio/vamp-kubist-istio-adapter
 
 go 1.12
 
+replace (
+	k8s.io/api => k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
+	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
+	k8s.io/client-go => k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+)
+
 require (
-	cloud.google.com/go v0.44.3 // indirect
-	github.com/gogo/protobuf v1.2.1
+	github.com/gogo/protobuf v1.3.1
+	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
-	github.com/magiconair/properties v1.8.1 // indirect
-	github.com/magneticio/vampkubistcli v0.0.53
+	github.com/magneticio/vampkubistcli v0.0.57
 	github.com/mhausenblas/kubecuddler v0.0.0-20181012110128-5836f3e4e7d0
 	github.com/montanaflynn/stats v0.5.0
 	github.com/mxschmitt/golang-combinations v1.0.0
-	github.com/pelletier/go-toml v1.4.0 // indirect
-	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.4.0
-	github.com/stretchr/testify v1.4.0
-	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586 // indirect
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
-	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
-	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
+	github.com/stretchr/testify v1.3.0
+	golang.org/x/crypto v0.0.0-20191029031824-8986dd9e96cf // indirect
+	google.golang.org/genproto v0.0.0-20191028173616-919d9bdd9fe6 // indirect
 	google.golang.org/grpc v1.23.0
-	gopkg.in/yaml.v2 v2.2.2
-	istio.io/api v0.0.0-20190718164343-4f4db2d49c2c
-	istio.io/istio v0.0.0-20190718184030-70b10ae7ecb1
-	k8s.io/api v0.0.0-20190222213804-5cb15d344471
-	k8s.io/apimachinery v0.0.0-20190221213512-86fb29eff628
+	gopkg.in/yaml.v2 v2.2.4
+	istio.io/api v0.0.0-20190820204432-483f2547d882
+	istio.io/gogo-genproto v0.0.0-20191009201739-17d570f95998 // indirect
+	istio.io/istio v0.0.0-20191011003621-3cfabd9b36bc
+	k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
+	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
 	k8s.io/client-go v10.0.0+incompatible
+	k8s.io/klog v0.4.0 // indirect
 )
