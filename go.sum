@@ -259,6 +259,8 @@ github.com/magneticio/vampkubistcli v0.0.53 h1:H/z8ozYBmCY/Mp6RqimZ315s4Km/BwuC9
 github.com/magneticio/vampkubistcli v0.0.53/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
 github.com/magneticio/vampkubistcli v0.0.58 h1:7OGq+/IkxdglVPWZ2osPo5kcTgwNUXnddqVXRo8f5q4=
 github.com/magneticio/vampkubistcli v0.0.58/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
+github.com/magneticio/vampkubistcli v0.0.59 h1:Iwn7xOaXbU3EDuc2UVwz3GuCCrJ6+LjaFzSQWt0MIuY=
+github.com/magneticio/vampkubistcli v0.0.59/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=

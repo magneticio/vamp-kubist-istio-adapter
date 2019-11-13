@@ -19,6 +19,8 @@ const MetricsReadPeriod = 10 * time.Second
 
 var k8sclient *k8s.Clientset
 
+var MetricVampClientProvider = vampclientprovider.New()
+
 // Setup setups periodic read of health metrics
 func Setup(ch chan *models.LogInstance) {
 	logging.Info("Setup reading k8s health metrics at %v with period %v\n", time.Now(), MetricsReadPeriod)
@@ -55,7 +57,7 @@ func InitK8sClient() error {
 
 // Process reads health data from K8s and send them to adapter's processor
 func Process(ch chan *models.LogInstance) error {
-	ns := vampclientprovider.VirtualCluster
+	ns := MetricVampClientProvider.GetVirtualCluster()
 
 	deps, err := k8sclient.AppsV1().Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {

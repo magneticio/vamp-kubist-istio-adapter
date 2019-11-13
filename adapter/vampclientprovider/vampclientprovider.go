@@ -9,16 +9,23 @@ import (
 	"github.com/spf13/viper"
 )
 
-var URL string
-var Token string
-var APIVersion string
-var Cert string
+type IVampClientProvider interface {
+	GetVirtualCluster() string
+	SetVirtualCluster(virtualcluster string)
+	GetConfigValues() map[string]string
+	GetRestClient() (client.IRestClient, error)
+}
 
-// TokenStore is initiliazed once and shared with all clients
-var TokenStore client.TokenStore = &client.InMemoryTokenStore{}
-var Project string
-var Cluster string
-var VirtualCluster string
+type VampClientProvider struct {
+	URL            string
+	Token          string
+	APIVersion     string
+	Cert           string
+	TokenStore     client.TokenStore
+	Project        string
+	Cluster        string
+	VirtualCluster string
+}
 
 // InitViperConfig used in tests so don't use this as a source of truth
 func InitViperConfig(path string, configName string) {
@@ -31,18 +38,40 @@ func InitViperConfig(path string, configName string) {
 	}
 }
 
-// GetRestClient return current configured client
-func GetRestClient() (client.IRestClient, error) {
-	// TODO: Add client pooling
-	URL = viper.GetString("url")
-	Token = viper.GetString("token")
-	APIVersion = viper.GetString("apiversion")
-	Cert = viper.GetString("cert")
-	Project = viper.GetString("project")
-	Cluster = viper.GetString("cluster")
-	VirtualCluster = viper.GetString("virtualcluster")
+func New() IVampClientProvider {
+	return &VampClientProvider{
+		URL:            viper.GetString("url"),
+		Token:          viper.GetString("token"),
+		APIVersion:     viper.GetString("apiversion"),
+		Cert:           viper.GetString("cert"),
+		TokenStore:     &client.InMemoryTokenStore{},
+		Project:        viper.GetString("project"),
+		Cluster:        viper.GetString("cluster"),
+		VirtualCluster: viper.GetString("virtualcluster"),
+	}
+}
 
-	restClient := client.NewRestClient(URL, Token, APIVersion, false, Cert, &TokenStore)
+func (vpc *VampClientProvider) GetVirtualCluster() string {
+	return vpc.VirtualCluster
+}
+
+func (vpc *VampClientProvider) SetVirtualCluster(virtualcluster string) {
+	vpc.VirtualCluster = virtualcluster
+}
+
+// GetConfigValues return configuration values for rest client
+func (vpc *VampClientProvider) GetConfigValues() map[string]string {
+	values := make(map[string]string)
+	values["project"] = vpc.Project
+	values["cluster"] = vpc.Cluster
+	values["virtual_cluster"] = vpc.VirtualCluster
+	return values
+}
+
+// GetRestClient return current configured client
+func (vpc *VampClientProvider) GetRestClient() (client.IRestClient, error) {
+
+	restClient := client.NewRestClient(vpc.URL, vpc.Token, vpc.APIVersion, false, vpc.Cert, &vpc.TokenStore)
 	if restClient == nil {
 		return nil, errors.New("Rest Client can not be initiliazed")
 	}

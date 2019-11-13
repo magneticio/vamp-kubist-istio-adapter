@@ -98,5 +98,6 @@ func TestProcessIntance1(t *testing.T) {
 	processor.ProcessInstanceForExperiments(experimentConfigurations, logInstance4)
 	assert.Equal(t, 2, processor.GetMergedExperimentLoggers().ExperimentLogs[experimentName].SubsetLogs[subset1Name].UserLogs[user1ID])
 
-	time.Sleep(70 * time.Second)
+	// time.Sleep(70 * time.Second)
+	assert.Nil(t, nil)
 }

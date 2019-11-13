@@ -24,6 +24,8 @@ const RefreshPeriod = 30 * time.Second
 
 var Delimiter = url.QueryEscape("/")
 
+var configuratorVampClientProvider = vampclientprovider.New()
+
 func GetExperimentConfigurations() *models.ExperimentConfigurations {
 	if atomic.LoadInt32(&activeConfigurationID) == 0 {
 		return &ExperimentConfigurations0
@@ -56,14 +58,11 @@ func ParseExperimentConfiguration(sourceAsJson string) (*models.ExperimentConfig
 
 // GenerateNewExperimentConfigurations gets experiments from the service
 func GenerateNewExperimentConfigurations() (*models.ExperimentConfigurations, error) {
-	restClient, restCLientError := vampclientprovider.GetRestClient()
+	restClient, restCLientError := configuratorVampClientProvider.GetRestClient()
 	if restCLientError != nil {
 		return nil, errors.New("Rest Client can not be initiliazed")
 	}
-	values := make(map[string]string)
-	values["project"] = vampclientprovider.Project
-	values["cluster"] = vampclientprovider.Cluster
-	values["virtual_cluster"] = vampclientprovider.VirtualCluster
+	values := configuratorVampClientProvider.GetConfigValues()
 	listOfExperiments, err := restClient.List("experiment", "json", values, false)
 	if err != nil {
 		return nil, err
@@ -112,14 +111,11 @@ func SetupConfigurator() {
 }
 
 func SendExperimentStats(experimentStatsGroup *models.ExperimentStatsGroup) error {
-	restClient, restCLientError := vampclientprovider.GetRestClient()
+	restClient, restCLientError := configuratorVampClientProvider.GetRestClient()
 	if restCLientError != nil {
 		return errors.New("Rest Client can not be initiliazed")
 	}
-	values := make(map[string]string)
-	values["project"] = vampclientprovider.Project
-	values["cluster"] = vampclientprovider.Cluster
-	values["virtual_cluster"] = vampclientprovider.VirtualCluster
+	values := configuratorVampClientProvider.GetConfigValues()
 	metricName := "target"
 
 	for experimentName, experimentStat := range experimentStatsGroup.ExperimentStatsMap {
@@ -159,14 +155,11 @@ func SendMetricStats(metricName string,
 	subset string,
 	experiment string,
 	metricStats *models.MetricStats) error {
-	restClient, restCLientError := vampclientprovider.GetRestClient()
+	restClient, restCLientError := configuratorVampClientProvider.GetRestClient()
 	if restCLientError != nil {
 		return errors.New("Rest Client can not be initiliazed")
 	}
-	values := make(map[string]string)
-	values["project"] = vampclientprovider.Project
-	values["cluster"] = vampclientprovider.Cluster
-	values["virtual_cluster"] = vampclientprovider.VirtualCluster
+	values := configuratorVampClientProvider.GetConfigValues()
 	values["destination"] = destination
 	values["experiment"] = experiment
 	values["port"] = port

@@ -62,18 +62,20 @@ func TestGetSubsetByLabels(t *testing.T) {
 		},
 	}
 
-	subsetmapper.DestinationsSubsetMap0 = &clientmodels.DestinationsSubsetsMap{
+	sm := &subsetmapper.SubsetMapper{}
+
+	sm.DestinationsSubsetMap0 = &clientmodels.DestinationsSubsetsMap{
 		DestinationsMap: destinationMap,
 		Labels:          labels,
 	}
 
-	subsetmapper.DestinationsSubsetMap1 = subsetmapper.DestinationsSubsetMap0
+	sm.DestinationsSubsetMap1 = sm.DestinationsSubsetMap0
 
 	destination0 := "kubist-example-destination"
 	destinationLabels0 := map[string]string{
 		"version": "v0.0.24",
 	}
-	subsetInfo0 := subsetmapper.GetSubsetByLabels(destination0, destinationLabels0)
+	subsetInfo0 := sm.GetSubsetByLabels(destination0, destinationLabels0)
 
 	fmt.Printf("Subsets: %v\n", subsetInfo0)
 
