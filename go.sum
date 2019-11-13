@@ -257,6 +257,8 @@ github.com/magneticio/forklift v0.1.15 h1:inB8pobUzEsE1a7LEYIrQAI8jbluxu6YmTg0GG
 github.com/magneticio/forklift v0.1.15/go.mod h1:Epb+vpSn9uzzt4hr88W09/LghuYhCXj9eLiZXKrzgB4=
 github.com/magneticio/vampkubistcli v0.0.53 h1:H/z8ozYBmCY/Mp6RqimZ315s4Km/BwuC9g1cE35h5Rw=
 github.com/magneticio/vampkubistcli v0.0.53/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
+github.com/magneticio/vampkubistcli v0.0.58 h1:7OGq+/IkxdglVPWZ2osPo5kcTgwNUXnddqVXRo8f5q4=
+github.com/magneticio/vampkubistcli v0.0.58/go.mod h1:YWV8Y+K64chKGSkZYDBA2/+F5ZRYtrluOVkLFInbm08=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
@@ -375,6 +377,7 @@ github.com/spf13/viper v1.3.2/go.mod h1:ZiWeW+zYFKm7srdB9IoDzzZXaJaI5eL9QjNiN/DM
 github.com/spf13/viper v1.4.0 h1:yXHLWeravcrgGyFSyCgdYpXQ9dR9c/WED3pg1RhxqEU=
 github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/yZzE=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+github.com/stretchr/objx v0.1.1 h1:2vfRuCMp5sSVIDSqO8oNnWJq7mPa6KVP3iPIwFBuy8A=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=

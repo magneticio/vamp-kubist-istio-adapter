@@ -32,7 +32,7 @@ func InitViperConfig(path string, configName string) {
 }
 
 // GetRestClient return current configured client
-func GetRestClient() (*client.RestClient, error) {
+func GetRestClient() (client.IRestClient, error) {
 	// TODO: Add client pooling
 	URL = viper.GetString("url")
 	Token = viper.GetString("token")
