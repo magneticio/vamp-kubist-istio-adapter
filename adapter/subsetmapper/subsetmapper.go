@@ -31,13 +31,15 @@ type SubsetMapper struct {
 }
 
 func New() *SubsetMapper {
-	return &SubsetMapper{
+	subsetMapper := &SubsetMapper{
 		DestinationsSubsetMap0: nil,
 		DestinationsSubsetMap1: nil,
 		activeID:               0,
 		vpc:                    vampclientprovider.New(),
 		restClient:             nil,
 	}
+	subsetMapper.setup()
+	return subsetMapper
 }
 
 type SubsetInfo struct {
@@ -100,8 +102,8 @@ func (sm *SubsetMapper) RefreshDestinationsSubsetsMap() error {
 	}
 }
 
-// Setup sets up period updates
-func (sm *SubsetMapper) Setup() {
+// setup sets up period updates
+func (sm *SubsetMapper) setup() {
 	logging.Info("Subset Mapper Setup at %v Refresh period: %v\n", time.Now(), RefreshPeriod)
 	sm.RefreshDestinationsSubsetsMap()
 	ticker := time.NewTicker(RefreshPeriod)

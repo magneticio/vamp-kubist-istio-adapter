@@ -83,7 +83,7 @@ func SetupProcessor() {
 // RunProcessor is the main function for Processor related tasks
 func RunProcessor() {
 	configurator.SetupConfigurator()
-	processSubsetMapper.Setup()
+	// processSubsetMapper.Setup()
 	metriclogger.Setup()
 	k8smetrics.Setup(LogInstanceChannel)
 	healthmetrics.Setup(LogInstanceChannel)

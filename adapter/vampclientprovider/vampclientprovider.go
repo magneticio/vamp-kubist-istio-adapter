@@ -52,6 +52,9 @@ func New() IVampClientProvider {
 }
 
 func (vpc *VampClientProvider) GetVirtualCluster() string {
+	if vpc.VirtualCluster == "" {
+		vpc.VirtualCluster = viper.GetString("virtualcluster")
+	}
 	return vpc.VirtualCluster
 }
 
@@ -68,9 +71,23 @@ func (vpc *VampClientProvider) GetConfigValues() map[string]string {
 	return values
 }
 
+// checkAndSetParameters is a temporary solution
+// to early initiliazed client provider problem
+func (vpc *VampClientProvider) checkAndSetParameters() {
+	if vpc.URL == "" {
+		vpc.URL = viper.GetString("url")
+		vpc.Token = viper.GetString("token")
+		vpc.APIVersion = viper.GetString("apiversion")
+		vpc.Cert = viper.GetString("cert")
+		vpc.Project = viper.GetString("project")
+		vpc.Cluster = viper.GetString("cluster")
+		vpc.VirtualCluster = viper.GetString("virtualcluster")
+	}
+}
+
 // GetRestClient return current configured client
 func (vpc *VampClientProvider) GetRestClient() (client.IRestClient, error) {
-
+	vpc.checkAndSetParameters()
 	restClient := client.NewRestClient(vpc.URL, vpc.Token, vpc.APIVersion, false, vpc.Cert, &vpc.TokenStore)
 	if restClient == nil {
 		return nil, errors.New("Rest Client can not be initiliazed")
