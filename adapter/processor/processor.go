@@ -25,6 +25,9 @@ const bufferSize = 1000
 // LogInstanceChannel is the main channel to store logInstances to be processed
 var LogInstanceChannel = make(chan *models.LogInstance, bufferSize)
 
+// processSubsetMapper is the subsetmapper used for processor
+var processSubsetMapper = subsetmapper.New()
+
 // TODO: Experiment loggers should be merged to metric loggers or refactored
 
 // ExperimentLoggers0 is the first logger for experiments
@@ -80,7 +83,7 @@ func SetupProcessor() {
 // RunProcessor is the main function for Processor related tasks
 func RunProcessor() {
 	configurator.SetupConfigurator()
-	subsetmapper.Setup()
+	// processSubsetMapper.Setup()
 	metriclogger.Setup()
 	k8smetrics.Setup(LogInstanceChannel)
 	healthmetrics.Setup(LogInstanceChannel)
@@ -106,7 +109,7 @@ func ProcessInstanceForMetrics(logInstance *models.LogInstance) {
 	destination := logInstance.Destination
 	port := logInstance.DestinationPort
 	labels := logInstance.DestinationLabels
-	subsets := subsetmapper.GetSubsetByLabels(destination, labels)
+	subsets := processSubsetMapper.GetSubsetByLabels(destination, labels)
 	// TODO: add error check
 	apiProtocol := GetStringFromInterface(logInstance.Values, "apiProtocol")
 	requestMethod := GetStringFromInterface(logInstance.Values, "requestMethod")

@@ -1,15 +1,14 @@
 package healthmetrics_test
 
 import (
-	"os"
-	"testing"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"testing"
 
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/healthmetrics"
 	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/models"
-	"github.com/magneticio/vamp-kubist-istio-adapter/adapter/vampclientprovider"
 	kubeclient "github.com/magneticio/vampkubistcli/kubernetes"
 	"github.com/magneticio/vampkubistcli/logging"
 	"github.com/stretchr/testify/assert"
@@ -60,7 +59,7 @@ func TestProcessHealthMetrics(t *testing.T) {
 	ts := CreateMockedK8s(t, "deployments_test.json")
 	defer ts.Close()
 
-	vampclientprovider.VirtualCluster = "logging"
+	healthmetrics.MetricVampClientProvider.SetVirtualCluster("logging")
 
 	err := healthmetrics.InitK8sClient()
 	assert.Nil(t, err)

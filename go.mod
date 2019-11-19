@@ -7,7 +7,7 @@ require (
 	github.com/gogo/protobuf v1.2.1
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
-	github.com/magneticio/vampkubistcli v0.0.53
+	github.com/magneticio/vampkubistcli v0.0.59
 	github.com/mhausenblas/kubecuddler v0.0.0-20181012110128-5836f3e4e7d0
 	github.com/montanaflynn/stats v0.5.0
 	github.com/mxschmitt/golang-combinations v1.0.0
