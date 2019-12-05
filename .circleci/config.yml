@@ -6,34 +6,23 @@ jobs:
     steps:
     - checkout
     - run: go test ./...
-    - run: mkdir -p ./artifacts
-    - run: cp ./version.txt ./artifacts/version.txt
-    - persist_to_workspace:
-            root: ./artifacts
-            paths:
-            - .
-  releasedev:
-    machine: true
-    steps:
-    - checkout
-    - attach_workspace:
-        at: ./artifacts
-    - run:
-        name: "Publish image to docker hub as development release"
-        command: |
-          VERSION=$(cat ./artifacts/version.txt)
-          rm ./artifacts/version.txt
-          docker login -u $DOCKER_USER -p $DOCKER_PASS
-          docker build -t magneticio/vampkubist-istio-adapter-dev:$VERSION-${CIRCLE_SHA1} .
-          docker push magneticio/vampkubist-istio-adapter-dev:$VERSION-${CIRCLE_SHA1}
-          docker tag magneticio/vampkubist-istio-adapter-dev:$VERSION-${CIRCLE_SHA1} magneticio/vampkubist-istio-adapter-dev:latest
-          docker push magneticio/vampkubist-istio-adapter-dev:latest
   release:
-    machine: true
+    docker:
+    - image: magneticio/kubist-util:v0.0.3
     steps:
     - checkout
-    - attach_workspace:
-        at: ./artifacts
+    - add_ssh_keys
+    - setup_remote_docker:
+        docker_layer_caching: true
+    - run: git config user.email "${GITHUB_EMAIL}"
+    - run: git config user.name "${CIRCLE_PROJECT_USERNAME}"
+    - run:
+        name: "Update version tag"
+        command: |
+          wget https://github.com/magneticio/semver-shell/releases/download/v0.2.0/semver_version.sh
+          chmod +x semver_version.sh
+          mkdir -p ./artifacts
+          ./semver_version.sh -l text -f "./artifacts/version.txt"
     - run:
         name: "Publish image to docker hub"
         command: |
@@ -44,6 +33,10 @@ jobs:
           docker push magneticio/vampkubist-istio-adapter:$VERSION
           docker tag magneticio/vampkubist-istio-adapter:$VERSION magneticio/vampkubist-istio-adapter:latest
           docker push magneticio/vampkubist-istio-adapter:latest
+          docker tag magneticio/vampkubist-istio-adapter:$VERSION magneticio/vampkubist-istio-adapter-dev:$VERSION
+          docker push magneticio/vampkubist-istio-adapter-dev:$VERSION
+          docker tag magneticio/vampkubist-istio-adapter:$VERSION magneticio/vampkubist-istio-adapter-dev:latest
+          docker push magneticio/vampkubist-istio-adapter-dev:latest
 workflows:
   version: 2
   main:
@@ -52,19 +45,9 @@ workflows:
         filters:
           tags:
             only: /^(v)\d+\.\d+\.\d+$/
-    - releasedev:
-        requires:
-        - build
-        filters:
-          branches:
-            only:
-            - master
-            - /rc-.*/
     - release:
         requires:
         - build
         filters:
           branches:
-            ignore: /.*/
-          tags:
-            only: /^(v)\d+\.\d+\.\d+$/
+            only: master
