@@ -240,7 +240,7 @@ func (g *MetricLoggerGroup) Setup() {
 			case <-ticker.C:
 				currentTime := time.Now().Unix()
 				for name, metricLogger := range g.MetricLoggers {
-					if metricLogger.LastUpdate < currentTime-int64(metricLogger.RefreshPeriod.Seconds()) {
+					if metricLogger.LastUpdate < currentTime-int64(metricLogger.RefreshPeriod.Seconds())*int64(metricLogger.NumberOfBuckets) {
 						delete(g.MetricLoggers, name)
 					}
 				}
