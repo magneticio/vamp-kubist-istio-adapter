@@ -162,6 +162,7 @@ type MetricLogger struct {
 	ValueMaps       []map[int64][]float64
 	ActiveID        int32
 	RefreshPeriod   time.Duration
+	LastUpdate      int64
 }
 
 // MetricValues is a struct to hold one bucket of metric stream
@@ -237,7 +238,12 @@ func (g *MetricLoggerGroup) Setup() {
 		for {
 			select {
 			case <-ticker.C:
-				// TODO: cleanup unused metric loggers
+				currentTime := time.Now().Unix()
+				for name, metricLogger := range g.MetricLoggers {
+					if metricLogger.LastUpdate < currentTime-int64(metricLogger.RefreshPeriod.Seconds())*int64(metricLogger.NumberOfBuckets) {
+						delete(g.MetricLoggers, name)
+					}
+				}
 				for _, metricLogger := range g.MetricLoggers {
 					metricLogger.RefreshMetricLogger()
 				}
@@ -305,6 +311,7 @@ func (m *MetricInfo) GetMetricLoggerNames(name string, apiProtocol, requestMetho
 // Push add data to the active bucket
 func (m *MetricLogger) Push(timestamp int64, value interface{}) {
 	id := atomic.LoadInt32(&m.ActiveID)
+	m.LastUpdate = timestamp
 	if _, ok := m.ValueMaps[id][timestamp]; !ok {
 		switch m.MetricType {
 		case Categorical:
