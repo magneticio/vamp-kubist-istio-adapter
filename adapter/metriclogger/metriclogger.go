@@ -230,8 +230,13 @@ func (g *MetricLoggerGroup) Setup() {
 	}
 	g.IsSetup = true
 	logging.Info("Setup Metric logger Group for %v Refresh period: %v\n", g.Name, g.RefreshPeriod)
-	for _, metricLogger := range g.MetricLoggers {
-		metricLogger.RefreshMetricLogger()
+	for key, metricLogger := range g.MetricLoggers {
+		err := metricLogger.RefreshMetricLogger()
+		if err != nil {
+			if strings.Contains(err.Error(), "does not exist") {
+				delete(g.MetricLoggers, key)
+			}
+		}
 	}
 	ticker := time.NewTicker(g.RefreshPeriod)
 	go func() {
@@ -244,8 +249,13 @@ func (g *MetricLoggerGroup) Setup() {
 						delete(g.MetricLoggers, name)
 					}
 				}
-				for _, metricLogger := range g.MetricLoggers {
-					metricLogger.RefreshMetricLogger()
+				for key, metricLogger := range g.MetricLoggers {
+					err := metricLogger.RefreshMetricLogger()
+					if err != nil {
+						if strings.Contains(err.Error(), "does not exist") {
+							delete(g.MetricLoggers, key)
+						}
+					}
 				}
 			}
 		}
