@@ -28,14 +28,16 @@ type VampClientProvider struct {
 }
 
 // InitViperConfig used in tests so don't use this as a source of truth
-func InitViperConfig(path string, configName string) {
+func InitViperConfig(path string, configName string) error {
 	viper.SetConfigName(configName) // name of config file (without extension)
 	viper.AddConfigPath(path)       // path to look for the config file in
 	viper.AddConfigPath(".")        // optionally look for config in the working directory
 	err := viper.ReadInConfig()     // Find and read the config file
 	if err != nil {                 // Handle errors reading the config file
 		logging.Error("Error config file: %s \n", err)
+		return err
 	}
+	return nil
 }
 
 func New() IVampClientProvider {
