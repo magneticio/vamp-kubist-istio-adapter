@@ -3,6 +3,8 @@ syntax = "proto3";
 // config for vampadapter
 package adapter.vampcadapter.config;
 
+import "gogoproto/gogo.proto";
+
 option go_package="config";
 
 // config for vampadapter
