@@ -4,7 +4,8 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.44.3 // indirect
-	github.com/gogo/protobuf v1.2.1
+	github.com/gogo/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/magneticio/vampkubistcli v0.0.59

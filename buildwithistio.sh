@@ -8,7 +8,7 @@
 
 MIXER_REPO=$GOPATH/src/istio.io/istio/mixer
 
-ISTIO=$GOPATH/src/istio.io
+ISTIO=$GOPATH/src/istio.io/istio
 
 echo "Coppying resources to local istio repo"
 mkdir -p $MIXER_REPO/adapter/vamp-kubist-istio-adapter/config
@@ -16,9 +16,11 @@ cp ./adapter/config/config.proto $MIXER_REPO/adapter/vamp-kubist-istio-adapter/c
 cp ./adapter/vampadapter.go $MIXER_REPO/adapter/vamp-kubist-istio-adapter/
 
 echo "Generate adapter definitions"
-cd $MIXER_REPO/adapter/vamp-kubist-istio-adapter
-go generate ./...
-go build ./...
+cd $ISTIO
+BUILD_WITH_CONTAINER=1 make gen
+# cd $MIXER_REPO/adapter/vamp-kubist-istio-adapter
+# go generate ./...
+# go build ./...
 cd -
 
 echo "Copy adapter config back"
